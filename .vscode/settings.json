@@ -1,0 +1,23 @@
+{
+    "dart.debugExternalPackageLibraries": true,
+    "dart.debugSdkLibraries": true,
+    "dart.flutterRunLogFile": null,
+    "dart.flutterSdkPath": "C:\\SDKFlutter\\flutter",
+    "dart.previewFlutterUiGuides": true,
+    "dart.previewFlutterUiGuidesCustomTracking": true,
+    "flutter.runOnDevice": true,
+    "flutter.debugAllowBanner": true,
+    "flutter.hotReloadOnSave": "always",
+    "dart.debugExternalLibraries": true,
+    "debug.javascript.autoAttachFilter": "disabled",
+    "dart.lineLength": 80,
+    "dart.analysisExcludedFolders": [
+        ".dart_tool",
+        ".idea",
+        ".vscode",
+        "build",
+        "ios",
+        "android/build"
+    ],
+   
+}
