@@ -6,6 +6,22 @@ import 'package:etecsa/features/auth/infrastructure/errors/auth_errors.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
 
+/// Map legacy POS roles to new SMS restaurant roles.
+/// Executed during migration and on login for backward compatibility.
+String mapPosRoleToSmsRole(String posRole) {
+  switch (posRole) {
+    case 'super_admin':
+      return 'admin';
+    case 'vendedor':
+      return 'redes';
+    case 'almacenero':
+      return 'cocina';
+    default:
+      // 'admin', 'redes', 'cocina', 'domicilio', 'mesero' pass through
+      return posRole;
+  }
+}
+
 class AuthDataSourceImpl extends AuthDataSource {
   final AppDatabase _db;
   final _secureStorage = const FlutterSecureStorage();
@@ -34,17 +50,8 @@ if (!dbUser.active) {
         throw CustomError('Usuario desactivado.');
       }
       
-      // Si es el usuario admin, asegurar que tenga rol super_admin
-      String userRoleToSave = dbUser.role;
-      if (dbUser.username.toLowerCase() == 'admin' && dbUser.role != 'super_admin') {
-        await _db.updatePassword(dbUser.id, password); // Esto actualiza, pero we'll do it differently
-        // Simplemente usamos la BD para actualizar el rol
-        final updDb = AppDatabase.instance;
-        await (updDb.update(updDb.users)..where((u)=>u.id.equals(dbUser.id)))
-            .write(UsersCompanion(role: const Value('super_admin')));
-        userRoleToSave = 'super_admin';
-        print('Updated admin to super_admin');
-      }
+      // Map POS role to SMS role on login
+      String userRoleToSave = mapPosRoleToSmsRole(dbUser.role);
       
       // Guardar sesión
       final sessionToken = _uuid.v4();
@@ -53,13 +60,17 @@ if (!dbUser.active) {
       await _secureStorage.write(key: 'session_time', value: now.toIso8601String());
       await _secureStorage.write(key: 'user_id', value: dbUser.id);
       await _secureStorage.write(key: 'user_role', value: userRoleToSave);
+      if (dbUser.phone != null && dbUser.phone!.isNotEmpty) {
+        await _secureStorage.write(key: 'user_phone', value: dbUser.phone!);
+      }
       
       return auth.User(
         id: dbUser.id,
         email: dbUser.email ?? '',
         fullName: dbUser.fullName,
-        roles: [dbUser.role],
+        roles: [userRoleToSave],
         token: sessionToken,
+        phone: dbUser.phone ?? '',
       );
     } catch (e) {
       print('Error en Login: $e');
@@ -102,11 +113,13 @@ if (!dbUser.active) {
       await _secureStorage.write(key: 'user_id', value: userId);
       await _secureStorage.write(key: 'user_role', value: userRole); // Guardar el rol correcto
 
+      final mappedRole = mapPosRoleToSmsRole(userRole);
+
       return auth.User(
         id: userId,
         email: '',
         fullName: fullName,
-        roles: ['admin'],
+        roles: [mappedRole],
         token: sessionToken,
       );
     } catch (e) {
@@ -137,12 +150,16 @@ if (!dbUser.active) {
         throw InvalidToken();
       }
 
+      // Load phone from secure storage if available
+      final storedPhone = await _secureStorage.read(key: 'user_phone');
+
       return auth.User(
         id: dbUser.id,
         email: dbUser.email ?? '',
         fullName: dbUser.fullName,
-        roles: [dbUser.role],
+        roles: [mapPosRoleToSmsRole(dbUser.role)],
         token: token,
+        phone: storedPhone ?? dbUser.phone ?? '',
       );
     } catch (e) {
       if (e is InvalidToken) rethrow;

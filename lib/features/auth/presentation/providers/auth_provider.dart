@@ -187,6 +187,8 @@ class AuthState {
 
   bool get isAuthenticated => authStatus == AuthStatus.authenticated;
   bool get isAdmin => user?.roles.contains('admin') ?? false;
-  bool get isVendedor => user?.roles.contains('vendedor') ?? false;
-  bool get isAlmacenero => user?.roles.contains('almacenero') ?? false;
+  bool get isRedes => user?.roles.contains('redes') ?? false;
+  bool get isCocina => user?.roles.contains('cocina') ?? false;
+  bool get isDomicilio => user?.roles.contains('domicilio') ?? false;
+  bool get isMesero => user?.roles.contains('mesero') ?? false;
 }
