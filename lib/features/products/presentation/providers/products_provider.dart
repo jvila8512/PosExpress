@@ -83,6 +83,7 @@ class ProductsNotifier extends Notifier<ProductsState> {
     double costPrice = 0,
     String? description,
     String? categoryId,
+    String? codigoCorto,
   }) async {
     // Validar límite de productos según licencia
     final canAdd = await canAddProduct();
@@ -97,6 +98,7 @@ class ProductsNotifier extends Notifier<ProductsState> {
         ProductsCompanion.insert(
           id: idOverride ?? const Uuid().v4(),
           code: Value(code.isEmpty ? null : code),
+          codigoCorto: Value(codigoCorto?.isEmpty ?? true ? null : codigoCorto),
           name: name,
           description: Value(description?.isEmpty ?? true ? null : description),
           categoryId: Value(categoryId),
@@ -120,6 +122,7 @@ class ProductsNotifier extends Notifier<ProductsState> {
     double costPrice = 0,
     String? description,
     String? categoryId,
+    String? codigoCorto,
   }) async {
     state = state.copyWith(isLoading: true);
     try {
@@ -127,6 +130,7 @@ class ProductsNotifier extends Notifier<ProductsState> {
         ProductsCompanion(
           name: Value(name),
           code: Value(code.isEmpty ? null : code),
+          codigoCorto: Value(codigoCorto?.isEmpty ?? true ? null : codigoCorto),
           description: Value(description?.isEmpty ?? true ? null : description),
           categoryId: Value(categoryId),
           unitPrice: Value(unitPrice),

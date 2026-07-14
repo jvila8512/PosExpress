@@ -21,6 +21,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
+  final _codigoCortoController = TextEditingController();
   final _priceController = TextEditingController();
   final _costController = TextEditingController();
   final _descController = TextEditingController();
@@ -34,6 +35,25 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
   bool get isEditing => widget.productId != null;
   final List<Map<String, dynamic>> _wholesaleRules = [];
+
+  /// Auto-generate codigoCorto from product name:
+  /// First 3 uppercase consonants/letters of the name.
+  String _generateCodigoCorto(String name) {
+    if (name.trim().isEmpty) return '';
+    final cleaned = name.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
+    if (cleaned.isEmpty) return '';
+    // Take first 3 characters
+    return cleaned.length >= 3 ? cleaned.substring(0, 3) : cleaned;
+  }
+
+  void _onNameChanged(String value) {
+    // Only auto-generate if the user hasn't manually edited codigoCorto
+    if (_codigoCortoController.text.isEmpty ||
+        _codigoCortoController.text == _generateCodigoCorto(_nameController.text)) {
+      _codigoCortoController.text = _generateCodigoCorto(value);
+    }
+    setState(() {});
+  }
 
   /// Check if cost > sale price (warning, not blocking)
   bool get _costExceedsPrice {
@@ -66,6 +86,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         _product = product;
         _nameController.text = product.name;
         _codeController.text = product.code ?? '';
+        _codigoCortoController.text = product.codigoCorto ?? '';
         _priceController.text = product.unitPrice.toString();
         _costController.text = product.costPrice.toString();
         _descController.text = product.description ?? '';
@@ -109,6 +130,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   void dispose() {
     _nameController.dispose();
     _codeController.dispose();
+    _codigoCortoController.dispose();
     _priceController.dispose();
     _costController.dispose();
     _descController.dispose();
@@ -188,6 +210,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
     final name = _nameController.text.trim();
     final code = _codeController.text.trim();
+    final codigoCorto = _codigoCortoController.text.trim().toUpperCase();
     final price = double.tryParse(_priceController.text) ?? 0;
     final cost = double.tryParse(_costController.text) ?? 0;
     final desc = _descController.text.trim();
@@ -227,6 +250,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               id: widget.productId!,
               name: name,
               code: code,
+              codigoCorto: codigoCorto,
               unitPrice: price,
               costPrice: cost,
               description: descParaGuardar,
@@ -245,6 +269,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               idOverride: productId,
               name: name,
               code: code,
+              codigoCorto: codigoCorto,
               unitPrice: price,
               costPrice: cost,
               description: descParaGuardar,
@@ -386,6 +411,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 prefixIcon: Icon(Icons.inventory_2),
                 border: OutlineInputBorder(),
               ),
+              onChanged: _onNameChanged,
               validator: (v) => v == null || v.trim().isEmpty
                   ? 'El nombre es requerido'
                   : null,
@@ -398,6 +424,23 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 prefixIcon: Icon(Icons.qr_code),
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _codigoCortoController,
+              decoration: InputDecoration(
+                labelText: 'Código Corto (SMS)',
+                hintText: 'Ej: CLE, SCQ, LTE',
+                prefixIcon: const Icon(Icons.short_text),
+                border: const OutlineInputBorder(),
+                helperText: 'Se genera automáticamente. Podés editarlo.',
+                helperStyle: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+              textCapitalization: TextCapitalization.characters,
+              maxLength: 5,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(

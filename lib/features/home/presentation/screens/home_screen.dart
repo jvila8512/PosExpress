@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:etecsa/data/repositories/home_repository.dart';
 import 'package:etecsa/core/database/app_database.dart';
@@ -12,6 +13,7 @@ import 'package:etecsa/features/home/presentation/widgets/alerts_banner.dart';
 import 'package:etecsa/features/license/presentation/widgets/license_alerts_banner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 final homeDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final repository = HomeRepository();
@@ -34,8 +36,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _loadUserName();
-    // Invalidar cache del homeDataProvider para que siempre cargue datos frescos
-    // cuando el usuario navega de vuelta al Home (ej: después de una venta)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.invalidate(homeDataProvider);
     });
@@ -71,10 +71,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  bool get _isVendedor => _userRole == 'vendedor';
+  // ── Role helpers ──────────────────────────────────────────────────
+  bool get _isAdmin => _userRole == 'admin' || _userRole == 'super_admin';
+  bool get _isRedes => _userRole == 'redes' || _userRole == 'vendedor';
+  bool get _isCocina => _userRole == 'cocina';
+  bool get _isDomicilio => _userRole == 'domicilio';
+  bool get _isMesero => _userRole == 'mesero';
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = isDark ? AppColors.darkTextPrimary : Colors.white;
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: SideMenu(scaffoldKey: _scaffoldKey),
@@ -189,6 +197,281 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildContent(Map<String, dynamic> data) {
+    // ── Role-gated dashboards ──────────────────────────────────
+    if (_isRedes) return _buildRedesDashboard(data);
+    if (_isCocina) return _buildCocinaDashboard();
+    if (_isDomicilio) return _buildDomicilioDashboard();
+    if (_isMesero) return _buildMeseroDashboard();
+    return _buildAdminDashboard(data); // Default: admin
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // REDES Dashboard
+  // ─────────────────────────────────────────────────────────────
+
+  Widget _buildRedesDashboard(Map<String, dynamic> data) {
+    final todayOrders = _getTodayOrdersCount(data);
+    final pendingConfirm = _getPendingConfirmationCount(data);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildRoleCard(
+            icon: Icons.share,
+            title: 'Redes',
+            subtitle: 'Atención al cliente',
+          ),
+          const SizedBox(height: 20),
+
+          // Shortcuts
+          _buildActionButton(
+            icon: Icons.add_circle_outline,
+            label: 'Nuevo Pedido',
+            color: AppTheme.colorCeleste,
+            onTap: () => context.go('/orders/new'),
+          ),
+          const SizedBox(height: 12),
+          _buildActionButton(
+            icon: Icons.list_alt,
+            label: 'Ver Seguimiento',
+            color: AppColors.accent,
+            onTap: () => context.go('/orders/tracking'),
+          ),
+          const SizedBox(height: 12),
+          _buildActionButton(
+            icon: Icons.history,
+            label: 'Historial de Pedidos',
+            color: AppTheme.colorMorado,
+            onTap: () => context.go('/orders/history'),
+          ),
+          const SizedBox(height: 24),
+
+          // Stats
+          Row(
+            children: [
+              _buildStatCard(
+                'Pedidos Hoy',
+                '${todayOrders}',
+                Icons.receipt_long,
+                AppTheme.colorCeleste,
+              ),
+              const SizedBox(width: 12),
+              _buildStatCard(
+                'Pendientes',
+                '${pendingConfirm}',
+                Icons.schedule,
+                AppColors.warningLight,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Access links
+          Text(
+            'ACCESOS',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildQuickLink('Clientes', Icons.people, () => context.go('/clients')),
+          const SizedBox(height: 8),
+          _buildQuickLink(
+            'Contactos de Confianza',
+            Icons.contact_phone,
+            () => context.go('/contacts'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // COCINA Dashboard
+  // ─────────────────────────────────────────────────────────────
+
+  Widget _buildCocinaDashboard() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildRoleCard(
+            icon: Icons.restaurant,
+            title: 'Cocina',
+            subtitle: 'Cola de pedidos',
+          ),
+          const SizedBox(height: 20),
+
+          _buildActionButton(
+            icon: Icons.view_column,
+            label: 'Ver Cola de Cocina',
+            color: AppColors.accent,
+            onTap: () => context.go('/kitchen'),
+          ),
+          const SizedBox(height: 24),
+
+          // Stats placeholder (would need live data)
+          Row(
+            children: [
+              _buildStatCard(
+                'Pendientes',
+                '—',
+                Icons.schedule,
+                AppColors.warningLight,
+              ),
+              const SizedBox(width: 12),
+              _buildStatCard(
+                'En cocina',
+                '—',
+                Icons.restaurant,
+                AppColors.accent,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          Text(
+            'ACCESOS',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildQuickLink(
+            'Contactos de Confianza',
+            Icons.contact_phone,
+            () => context.go('/contacts'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // DOMICILIO Dashboard
+  // ─────────────────────────────────────────────────────────────
+
+  Widget _buildDomicilioDashboard() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildRoleCard(
+            icon: Icons.delivery_dining,
+            title: 'Domicilio',
+            subtitle: 'Entregas pendientes',
+          ),
+          const SizedBox(height: 20),
+
+          _buildActionButton(
+            icon: Icons.directions_bike,
+            label: 'Ver Entregas',
+            color: AppColors.successLight,
+            onTap: () => context.go('/delivery'),
+          ),
+          const SizedBox(height: 24),
+
+          Row(
+            children: [
+              _buildStatCard(
+                'Pendientes',
+                '—',
+                Icons.pending_actions,
+                AppColors.warningLight,
+              ),
+              const SizedBox(width: 12),
+              _buildStatCard(
+                'En camino',
+                '—',
+                Icons.delivery_dining,
+                AppColors.accent,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          Text(
+            'ACCESOS',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildQuickLink(
+            'Contactos de Confianza',
+            Icons.contact_phone,
+            () => context.go('/contacts'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // MESERO Dashboard
+  // ─────────────────────────────────────────────────────────────
+
+  Widget _buildMeseroDashboard() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildRoleCard(
+            icon: Icons.room_service,
+            title: 'Mesero',
+            subtitle: 'Pedidos de mesa',
+          ),
+          const SizedBox(height: 20),
+
+          _buildActionButton(
+            icon: Icons.add_circle_outline,
+            label: 'Nuevo Pedido Mesa',
+            color: AppTheme.colorCeleste,
+            onTap: () => context.go('/orders/new'),
+          ),
+          const SizedBox(height: 24),
+
+          Row(
+            children: [
+              _buildStatCard(
+                'Mesas activas',
+                '—',
+                Icons.table_restaurant,
+                AppTheme.colorCeleste,
+              ),
+              const SizedBox(width: 12),
+              _buildStatCard(
+                'Pendientes',
+                '—',
+                Icons.schedule,
+                AppColors.warningLight,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // ADMIN Dashboard (existing layout + daily close shortcut)
+  // ─────────────────────────────────────────────────────────────
+
+  Widget _buildAdminDashboard(Map<String, dynamic> data) {
     final session = data['activeSession'] as dynamic;
     final isSessionOpen = session != null && session.status == 'open';
 
@@ -202,24 +485,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(height: 20),
 
-        // Alerts Banner (if any) — solo admin
-        if (!_isVendedor) ...[
-          AlertsBanner(data: data),
-          const LicenseAlertsBanner(),
-        ],
+        // License Alerts
+        const LicenseAlertsBanner(),
 
-        // KPI Cards — vendedor NO ve Ganancia
-        KPICardsRow(data: data, isVendedor: _isVendedor),
+        const SizedBox(height: 16),
+
+        // Daily Close shortcut
+        _buildActionButton(
+          icon: Icons.account_balance,
+          label: 'Cierre del Día',
+          color: AppTheme.colorMorado,
+          onTap: () => context.go('/daily-close'),
+        ),
+        const SizedBox(height: 20),
+
+        // KPI Cards
+        KPICardsRow(data: data, isVendedor: false),
 
         const SizedBox(height: 24),
 
-        // Sales Bar Chart (Last 30 days) — solo admin ve chart completo
-        if (!_isVendedor)
-          SalesBarChart(dailySales: data['dailySales'] as Map<int, double>),
+        // Sales Bar Chart (Last 30 days)
+        SalesBarChart(dailySales: data['dailySales'] as Map<int, double>),
 
-        if (!_isVendedor) const SizedBox(height: 24),
+        const SizedBox(height: 24),
 
-        // Payment Method Donut Chart — vendedor puede ver su desglose
+        // Payment Method Donut Chart
         PaymentDonutChart(
           paymentMethods: data['paymentMethods'] as Map<String, double>,
         ),
@@ -233,18 +523,239 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(height: 24),
 
-        // Quick Access Buttons — solo admin
-        if (!_isVendedor) _buildQuickAccessButtons(),
+        // Quick Access Buttons
+        _buildQuickAccessButtons(),
 
-        if (!_isVendedor) const SizedBox(height: 32),
+        const SizedBox(height: 16),
+
+        // Export/Import shortcut (admin only)
+        _buildActionButton(
+          icon: Icons.file_upload,
+          label: 'Exportar/Importar (JSON)',
+          color: AppTheme.colorCeleste,
+          onTap: () => context.go('/exports'),
+        ),
+
+        const SizedBox(height: 32),
       ],
       ),
     );
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // SHARED WIDGETS
+  // ─────────────────────────────────────────────────────────────
+
+  Widget _buildRoleCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.colorCeleste,
+            AppTheme.colorCeleste.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.bungee(
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 18, color: color),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickLink(String label, IconData icon, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: AppTheme.colorCeleste),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────
+
+  int _getTodayOrdersCount(Map<String, dynamic> data) {
+    try {
+      final orders = data['orders'] as List? ?? [];
+      return orders.length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  int _getPendingConfirmationCount(Map<String, dynamic> data) {
+    try {
+      final orders = data['orders'] as List? ?? [];
+      return orders.where((o) {
+        final estado = o is Map ? o['estado']?.toString() : '';
+        return estado == 'registrado';
+      }).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  // ── Existing widgets (kept for admin) ─────────────────────────
+
   Widget _buildSessionBanner(bool isOpen, dynamic session) {
     return GestureDetector(
-      onTap: isOpen ? () => context.go('/pos') : null,
+      onTap: isOpen ? () => context.go('/daily-close') : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -305,7 +816,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             if (!isOpen)
               ElevatedButton(
-                onPressed: () => context.go('/pos'),
+                onPressed: () => context.go('/daily-close'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.orange.shade700,
@@ -349,10 +860,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Expanded(
               child: _buildQuickButton(
-                'Ventas',
-                Icons.analytics_outlined,
+                'Clientes',
+                Icons.people_outline,
                 const Color(0xFF378ADD),
-                () => context.go('/reports'),
+                () => context.go('/clients'),
               ),
             ),
             const SizedBox(width: 12),
@@ -371,19 +882,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Expanded(
               child: _buildQuickButton(
-                'Inventario',
-                Icons.warehouse_outlined,
+                'Cierre Día',
+                Icons.account_balance,
                 const Color(0xFFEF9F27),
-                () => context.go('/inventory'),
+                () => context.go('/daily-close'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildQuickButton(
-                'Cajas',
-                Icons.point_of_sale,
+                'Gastos',
+                Icons.receipt_long_outlined,
                 AppTheme.colorMorado,
-                () => context.go('/sessions'),
+                () => context.go('/expenses'),
               ),
             ),
           ],

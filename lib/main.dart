@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:etecsa/config/config.dart';
+import 'package:etecsa/config/theme/theme_provider.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:uuid/uuid.dart';
 
@@ -67,14 +68,19 @@ Future<void> _crearLicenciaPrueba() async {
   }
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hamburguesaTheme = ref.watch(hamburguesaThemeProvider);
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp.router(
       routerConfig: appRouter,
-      theme: AppTheme.getTheme(),
+      theme: hamburguesaTheme.light,
+      darkTheme: hamburguesaTheme.dark,
+      themeMode: themeMode,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
