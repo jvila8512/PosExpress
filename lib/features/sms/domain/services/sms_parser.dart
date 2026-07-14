@@ -39,7 +39,7 @@ class SmsParser {
       // Must have at least 't' (type) field
       if (map['t'] == null) return null;
 
-      return SmsPayload._fromMap(map);
+      return SmsPayload.fromMap(map);
     } catch (_) {
       return null;
     }

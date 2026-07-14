@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 /// Service for sending and receiving SMS messages via the `telephony` package.
 ///

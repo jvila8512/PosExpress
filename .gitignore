@@ -28,6 +28,7 @@ C?*
 !lib/features/clients/
 !lib/features/contacts/
 !lib/features/categories/
+!test/core/
 
 # Google Fonts cache
 google_fonts/
