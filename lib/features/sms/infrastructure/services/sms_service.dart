@@ -1,24 +1,39 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:telephony_sdt/telephony.dart';
 
 /// Service for sending and receiving SMS messages via the `telephony` package.
 ///
 /// Provides ACK timer management (5-minute timeout per sent PED)
 /// and deduplication by order ID.
+///
+/// [telephony] is injectable for testing. Defaults to [Telephony.instance].
 class SmsService {
   final Map<String, Timer> _ackTimers = {};
   final Set<String> _processedOrders = {};
+  Telephony? _telephony;
 
-  /// Send an SMS message programmatically.
+  /// Get the Telephony instance (lazy, only initialized when sendSms is called).
+  Telephony get _telephonyInstance => _telephony ??= Telephony.instance;
+
+  SmsService({Telephony? telephony}) : _telephony = telephony;
+
+  /// Send an SMS message programmatically using telephony_sdt.
   ///
-  /// In production this wraps `telephony` package's `sendSms()`.
-  /// For now, returns true to indicate the message was queued.
+  /// Returns true if the message was queued successfully.
   Future<bool> sendSms(String phoneNumber, String message) async {
-    // TODO: Wrap telephony.sendSms(phoneNumber, message)
-    // The telephony package is available but requires Android platform.
-    // For now we log and return success.
-    print('SMS to $phoneNumber: $message');
-    return true;
+    if (phoneNumber.isEmpty) {
+      debugPrint('SMS skipped: no phone number provided');
+      return false;
+    }
+    try {
+      await _telephonyInstance.sendSms(to: phoneNumber, message: message);
+      debugPrint('SMS sent to $phoneNumber: ${message.length} chars');
+      return true;
+    } catch (e) {
+      debugPrint('Failed to send SMS to $phoneNumber: $e');
+      return false;
+    }
   }
 
   /// Start an ACK timer for the given [orderId].

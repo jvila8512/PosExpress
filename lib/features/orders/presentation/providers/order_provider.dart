@@ -48,7 +48,9 @@ class OrderNotifier extends Notifier<OrderState> {
   bool get isLoading => _isLoading;
 
   /// Create a new order and send PED SMS.
-  Future<void> createOrder(RestaurantOrder order) async {
+  ///
+  /// [destinationPhone] is the Cocina/kitchen phone number to send the PED to.
+  Future<void> createOrder(RestaurantOrder order, {String? destinationPhone}) async {
     _isLoading = true;
     _error = null;
 
@@ -70,7 +72,7 @@ class OrderNotifier extends Notifier<OrderState> {
         amount: order.montoTotal,
       );
 
-      await _smsService.sendSms('', smsPayload.toJson());
+      await _smsService.sendSms(destinationPhone ?? '', smsPayload.toJson());
       _smsService.startAckTimer(order.id, () {
         _error = 'Cocina did not confirm order #${order.id}';
       });
@@ -84,7 +86,10 @@ class OrderNotifier extends Notifier<OrderState> {
   }
 
   /// Update order state and send appropriate SMS.
-  Future<void> updateState(String orderId, OrderState newState) async {
+  ///
+  /// [destinationPhone] is the phone to send the state notification to
+  /// (e.g. Redes phone for HEC, client phone for ENT).
+  Future<void> updateState(String orderId, OrderState newState, {String? destinationPhone}) async {
     _error = null;
 
     try {
@@ -108,7 +113,7 @@ class OrderNotifier extends Notifier<OrderState> {
 
       if (smsType.isNotEmpty) {
         final payload = SmsPayload(type: smsType, orderId: orderId);
-        await _smsService.sendSms('', payload.toJson());
+        await _smsService.sendSms(destinationPhone ?? '', payload.toJson());
       }
 
       // Update local list

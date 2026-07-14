@@ -6,6 +6,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:etecsa/config/config.dart';
 import 'package:etecsa/config/theme/theme_provider.dart';
 import 'package:etecsa/core/database/app_database.dart';
+import 'package:etecsa/features/sms/infrastructure/services/broadcast_receiver.dart';
+import 'package:etecsa/features/sms/infrastructure/services/sms_service.dart';
+import 'package:telephony_sdt/telephony.dart';
 import 'package:uuid/uuid.dart';
 
 /// Bandera para crear licencia de prueba al iniciar
@@ -37,9 +40,36 @@ void main() async {
     await _crearLicenciaPrueba();
   }
 
+  // Inicializar SMS BroadcastReceiver
+  _initSmsReceiver();
+
   runApp(
     const ProviderScope(child: MainApp())
   );
+}
+
+/// Inicializar el receptor de SMS y solicitar permisos.
+void _initSmsReceiver() {
+  try {
+    final smsService = SmsService();
+    final receiver = BroadcastReceiver(smsService);
+
+    receiver.setOnSmsReceived((payload, origin) {
+      debugPrint('[SMS] Received ${payload.type} from $origin: ${payload.orderId}');
+    });
+
+    // Solicitar permisos y registrar listener
+    Telephony.instance.requestPhoneAndSmsPermissions.then((granted) {
+      if (granted == true) {
+        receiver.register();
+        debugPrint('✅ SMS permissions granted, receiver active');
+      } else {
+        debugPrint('⚠️ SMS permissions not granted');
+      }
+    });
+  } catch (e) {
+    debugPrint('Failed to init SMS receiver: $e');
+  }
 }
 
 /// Crear licencia de prueba en la base de datos
