@@ -1,5 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/features/clients/domain/entities/restaurant_client.dart';
+import 'package:etecsa/features/clients/domain/entities/restaurant_client.dart' as domain;
 
 /// Drift datasource for restaurant clients.
 class ClientDatasource {
@@ -7,20 +8,20 @@ class ClientDatasource {
 
   ClientDatasource(this._db);
 
-  Future<void> createClient(RestaurantClient client) async {
+  Future<void> createClient(domain.RestaurantClient client) async {
     await _db.into(_db.restaurantClients).insert(
       RestaurantClientsCompanion.insert(
         id: client.id,
         nombre: client.nombre,
         telefono: client.telefono,
-        direccion: Value(client.direccion),
-        referencia: Value(client.referencia),
-        notas: Value(client.notas),
+        direccion: Value<String?>(client.direccion),
+        referencia: Value<String?>(client.referencia),
+        notas: Value<String?>(client.notas),
       ),
     );
   }
 
-  Future<RestaurantClient?> getClientById(String id) async {
+  Future<domain.RestaurantClient?> getClientById(String id) async {
     final row = await (_db.select(_db.restaurantClients)
           ..where((c) => c.id.equals(id)))
         .getSingleOrNull();
@@ -28,7 +29,7 @@ class ClientDatasource {
     return _mapRow(row);
   }
 
-  Future<List<RestaurantClient>> searchClients(String query) async {
+  Future<List<domain.RestaurantClient>> searchClients(String query) async {
     final term = '%$query%';
     final rows = await (_db.select(_db.restaurantClients)
           ..where((c) =>
@@ -38,22 +39,22 @@ class ClientDatasource {
     return rows.map(_mapRow).toList();
   }
 
-  Future<List<RestaurantClient>> getAllClients() async {
+  Future<List<domain.RestaurantClient>> getAllClients() async {
     final rows = await (_db.select(_db.restaurantClients)
           ..orderBy([(c) => OrderingTerm.desc(c.fechaRegistro)]))
         .get();
     return rows.map(_mapRow).toList();
   }
 
-  Future<void> updateClient(RestaurantClient client) async {
+  Future<void> updateClient(domain.RestaurantClient client) async {
     await (_db.update(_db.restaurantClients)
           ..where((c) => c.id.equals(client.id)))
         .write(RestaurantClientsCompanion(
           nombre: Value(client.nombre),
           telefono: Value(client.telefono),
-          direccion: Value(client.direccion),
-          referencia: Value(client.referencia),
-          notas: Value(client.notas),
+          direccion: Value<String?>(client.direccion),
+          referencia: Value<String?>(client.referencia),
+          notas: Value<String?>(client.notas),
         ));
   }
 
@@ -63,8 +64,8 @@ class ClientDatasource {
         .go();
   }
 
-  RestaurantClient _mapRow(RestaurantClientRow row) {
-    return RestaurantClient(
+  domain.RestaurantClient _mapRow(RestaurantClientRow row) {
+    return domain.RestaurantClient(
       id: row.id,
       nombre: row.nombre,
       telefono: row.telefono,

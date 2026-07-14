@@ -1,5 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
+import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart' as domain;
 import 'package:etecsa/features/orders/domain/entities/order_state.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,17 +11,17 @@ class OrderDatasource {
 
   OrderDatasource(this._db);
 
-  Future<void> createOrder(RestaurantOrder order) async {
+  Future<void> createOrder(domain.RestaurantOrder order) async {
     await _db.into(_db.restaurantOrders).insert(
       RestaurantOrdersCompanion.insert(
         id: order.id,
         tipoPedido: order.tipoPedido,
         clienteId: order.clienteId,
-        mesaId: Value(order.mesaId),
+        mesaId: Value<String?>(order.mesaId),
         estado: order.estado.name,
-        canalOrigen: Value(order.canalOrigen),
-        horaSolicitada: Value(order.horaSolicitada),
-        metodoPago: Value(order.metodoPago),
+        canalOrigen: Value<String?>(order.canalOrigen),
+        horaSolicitada: Value<String?>(order.horaSolicitada),
+        metodoPago: Value<String?>(order.metodoPago),
         montoTotal: order.montoTotal,
         creadoPorUsuarioId: order.creadoPorUsuarioId,
       ),
@@ -41,7 +42,7 @@ class OrderDatasource {
     }
   }
 
-  Future<RestaurantOrder?> getOrderById(String id) async {
+  Future<domain.RestaurantOrder?> getOrderById(String id) async {
     final row = await (_db.select(_db.restaurantOrders)
           ..where((o) => o.id.equals(id)))
         .getSingleOrNull();
@@ -51,7 +52,7 @@ class OrderDatasource {
     return _mapRowToOrder(row, items);
   }
 
-  Future<List<RestaurantOrder>> getTodayOrders() async {
+  Future<List<domain.RestaurantOrder>> getTodayOrders() async {
     final today = DateTime.now();
     final startOfDay = DateTime(today.year, today.month, today.day);
 
@@ -60,7 +61,7 @@ class OrderDatasource {
           ..orderBy([(o) => OrderingTerm.desc(o.fechaCreacion)]))
         .get();
 
-    final orders = <RestaurantOrder>[];
+    final orders = <domain.RestaurantOrder>[];
     for (final row in rows) {
       final items = await _getOrderItems(row.id);
       orders.add(_mapRowToOrder(row, items));
@@ -68,14 +69,14 @@ class OrderDatasource {
     return orders;
   }
 
-  Future<List<RestaurantOrder>> getOrdersByState(OrderState state) async {
+  Future<List<domain.RestaurantOrder>> getOrdersByState(OrderState state) async {
     final stateName = state.name;
     final rows = await (_db.select(_db.restaurantOrders)
           ..where((o) => o.estado.equals(stateName))
           ..orderBy([(o) => OrderingTerm.desc(o.fechaCreacion)]))
         .get();
 
-    final orders = <RestaurantOrder>[];
+    final orders = <domain.RestaurantOrder>[];
     for (final row in rows) {
       final items = await _getOrderItems(row.id);
       orders.add(_mapRowToOrder(row, items));
@@ -91,28 +92,28 @@ class OrderDatasource {
         ));
   }
 
-  Future<void> updateOrder(RestaurantOrder order) async {
+  Future<void> updateOrder(domain.RestaurantOrder order) async {
     await (_db.update(_db.restaurantOrders)
           ..where((o) => o.id.equals(order.id)))
         .write(RestaurantOrdersCompanion(
           tipoPedido: Value(order.tipoPedido),
           clienteId: Value(order.clienteId),
-          mesaId: Value(order.mesaId),
+          mesaId: Value<String?>(order.mesaId),
           estado: Value(order.estado.name),
-          canalOrigen: Value(order.canalOrigen),
-          horaSolicitada: Value(order.horaSolicitada),
-          metodoPago: Value(order.metodoPago),
+          canalOrigen: Value<String?>(order.canalOrigen),
+          horaSolicitada: Value<String?>(order.horaSolicitada),
+          metodoPago: Value<String?>(order.metodoPago),
           montoTotal: Value(order.montoTotal),
-          motivoCancelacion: Value(order.motivoCancelacion),
+          motivoCancelacion: Value<String?>(order.motivoCancelacion),
         ));
   }
 
-  Future<List<RestaurantOrder>> getAllOrders() async {
+  Future<List<domain.RestaurantOrder>> getAllOrders() async {
     final rows = await (_db.select(_db.restaurantOrders)
           ..orderBy([(o) => OrderingTerm.desc(o.fechaCreacion)]))
         .get();
 
-    final orders = <RestaurantOrder>[];
+    final orders = <domain.RestaurantOrder>[];
     for (final row in rows) {
       final items = await _getOrderItems(row.id);
       orders.add(_mapRowToOrder(row, items));
@@ -120,7 +121,7 @@ class OrderDatasource {
     return orders;
   }
 
-  Future<List<RestaurantOrder>> searchOrders(String query) async {
+  Future<List<domain.RestaurantOrder>> searchOrders(String query) async {
     // Search by ID or client ID
     final rows = await (_db.select(_db.restaurantOrders)
           ..where((o) =>
@@ -128,7 +129,7 @@ class OrderDatasource {
           ..orderBy([(o) => OrderingTerm.desc(o.fechaCreacion)]))
         .get();
 
-    final orders = <RestaurantOrder>[];
+    final orders = <domain.RestaurantOrder>[];
     for (final row in rows) {
       final items = await _getOrderItems(row.id);
       orders.add(_mapRowToOrder(row, items));
@@ -142,11 +143,11 @@ class OrderDatasource {
         .get();
   }
 
-  RestaurantOrder _mapRowToOrder(
+  domain.RestaurantOrder _mapRowToOrder(
     RestaurantOrder row,
     List<RestaurantOrderItem> items,
   ) {
-    return RestaurantOrder(
+    return domain.RestaurantOrder(
       id: row.id,
       tipoPedido: row.tipoPedido,
       clienteId: row.clienteId,
@@ -158,7 +159,7 @@ class OrderDatasource {
       montoTotal: row.montoTotal,
       creadoPorUsuarioId: row.creadoPorUsuarioId,
       fechaCreacion: row.fechaCreacion,
-      items: items.map((i) => OrderItem(
+      items: items.map((i) => domain.OrderItem(
         code: i.productoCodigo,
         qty: i.cantidad.toInt(),
         price: i.precioUnitario,

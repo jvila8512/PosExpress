@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:etecsa/core/database/app_database.dart';
+import 'package:etecsa/core/database/app_database.dart' hide RestaurantOrder;
 import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
 import 'package:etecsa/features/orders/domain/entities/order_state.dart';
 import 'package:etecsa/features/orders/domain/repositories/order_repository.dart';

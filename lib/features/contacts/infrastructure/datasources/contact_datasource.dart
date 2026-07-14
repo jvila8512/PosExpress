@@ -1,5 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/features/contacts/domain/entities/trusted_contact.dart';
+import 'package:etecsa/features/contacts/domain/entities/trusted_contact.dart' as domain;
 
 /// Drift datasource for trusted contacts.
 class ContactDatasource {
@@ -7,7 +8,7 @@ class ContactDatasource {
 
   ContactDatasource(this._db);
 
-  Future<void> createContact(TrustedContact contact) async {
+  Future<void> createContact(domain.TrustedContact contact) async {
     await _db.into(_db.trustedContacts).insert(
       TrustedContactsCompanion.insert(
         id: contact.id,
@@ -19,7 +20,7 @@ class ContactDatasource {
     );
   }
 
-  Future<TrustedContact?> getContactById(String id) async {
+  Future<domain.TrustedContact?> getContactById(String id) async {
     final row = await (_db.select(_db.trustedContacts)
           ..where((c) => c.id.equals(id)))
         .getSingleOrNull();
@@ -27,7 +28,7 @@ class ContactDatasource {
     return _mapRow(row);
   }
 
-  Future<List<TrustedContact>> getContacts({String? rol}) async {
+  Future<List<domain.TrustedContact>> getContacts({String? rol}) async {
     final query = _db.select(_db.trustedContacts);
     if (rol != null) {
       query.where((c) => c.rol.equals(rol));
@@ -43,7 +44,7 @@ class ContactDatasource {
     return rows.map((r) => r.numeroTelefono).toList();
   }
 
-  Future<void> updateContact(TrustedContact contact) async {
+  Future<void> updateContact(domain.TrustedContact contact) async {
     await (_db.update(_db.trustedContacts)
           ..where((c) => c.id.equals(contact.id)))
         .write(TrustedContactsCompanion(
@@ -68,8 +69,8 @@ class ContactDatasource {
         .go();
   }
 
-  TrustedContact _mapRow(TrustedContactRow row) {
-    return TrustedContact(
+  domain.TrustedContact _mapRow(TrustedContactRow row) {
+    return domain.TrustedContact(
       id: row.id,
       rol: row.rol,
       usuarioId: row.usuarioId,
