@@ -104,7 +104,7 @@ class _HelpScreenState extends State<HelpScreen> {
                                 ),
                               ),
                               const Text(
-                                'PosJVL',
+                                'ExpressPos',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 16,
@@ -893,7 +893,7 @@ DESPACHOS A VENDEDORAS → salen del PV''',
           _buildFeatureCard(
             icon: Icons.assessment_outlined,
             title: 'Reporte de Ventas (Excel)',
-            description: 'Menú → Detalle de Caja → Exportar → Reporte Ventas. Tabla con fórmulas: Inicio, Entrada=0, Disponible, Vendido, Final, Costo y Ventas. Footer "Diseñado por PosJVL".',
+            description: 'Menú → Detalle de Caja → Exportar → Reporte Ventas. Tabla con fórmulas: Inicio, Entrada=0, Disponible, Vendido, Final, Costo y Ventas. Footer "Diseñado por ExpressPos".',
           ),
           const SizedBox(height: 12),
           _buildFeatureCard(

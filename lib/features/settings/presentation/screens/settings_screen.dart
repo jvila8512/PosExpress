@@ -107,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Text(
-                'PosJVL v$_appVersion',
+                'ExpressPos v$_appVersion',
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
               ),
             ),

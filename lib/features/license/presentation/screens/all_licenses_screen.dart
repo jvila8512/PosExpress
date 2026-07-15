@@ -603,11 +603,11 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
     final phone = telefono.replaceAll(RegExp(r'[^\d]'), '');
     final hasCountryCode = telefono.trim().startsWith('+');
     final fullPhone = hasCountryCode ? phone : '53$phone';
-    final text = '¡Hola! Aquí está tu licencia de PosJVL\n\n'
+    final text = '¡Hola! Aquí está tu licencia de ExpressPos\n\n'
         'Tipo: $plan\n'
         'Código: $codigo\n\n'
         'Instala la app e ingresa este código para activar tu licencia.\n\n'
-        '© 2026 PosJVL';
+        '© 2026 ExpressPos';
 
     final url = Uri.parse('https://wa.me/$fullPhone?text=${Uri.encodeComponent(text)}');
 
@@ -627,7 +627,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
 
   Future<void> _enviarPorSms(String telefono, String codigo, String plan) async {
     final phone = telefono.replaceAll(RegExp(r'[^\d]'), '');
-    final text = 'Licencia PosJVL:\nPlan: $plan\nCódigo: $codigo\n'
+    final text = 'Licencia ExpressPos:\nPlan: $plan\nCódigo: $codigo\n'
         'Instalá la app e ingresá el código para activar.';
 
     final url = Uri.parse('sms:$phone?body=${Uri.encodeComponent(text)}');

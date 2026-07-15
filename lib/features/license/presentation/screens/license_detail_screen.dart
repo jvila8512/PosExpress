@@ -455,10 +455,10 @@ class _LicenseDetailScreenState extends ConsumerState<LicenseDetailScreen> {
     if (_cliente == null) return;
     
     final phone = _cliente.telefono.replaceAll(RegExp(r'[^\d]'), '');
-    final text = 'Tu código de licencia PosJVL es: ${_licencia.codigo}\n\n'
+    final text = 'Tu código de licencia ExpressPos es: ${_licencia.codigo}\n\n'
         'Plan: ${_licencia.plan}\n'
         'Expira: ${_formatDate(_licencia.fechaExpiracion)}\n\n'
-        'Gracias por usar PosJVL';
+        'Gracias por usar ExpressPos';
     
     final url = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(text)}');
     
@@ -469,7 +469,7 @@ class _LicenseDetailScreenState extends ConsumerState<LicenseDetailScreen> {
     if (_cliente == null) return;
     
     final phone = _cliente.telefono.replaceAll(RegExp(r'[^\d]'), '');
-    final text = 'Tu código de licencia PosJVL es: ${_licencia.codigo}\n'
+    final text = 'Tu código de licencia ExpressPos es: ${_licencia.codigo}\n'
         'Plan: ${_licencia.plan} | Expira: ${_formatDate(_licencia.fechaExpiracion)}\n'
         'Instalá la app e ingresá el código para activar.';
     

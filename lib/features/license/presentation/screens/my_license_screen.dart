@@ -71,7 +71,7 @@ class _MyLicenseScreenState extends State<MyLicenseScreen> {
   Future<void> _contactarJavier() async {
     final licenseCode = await LicenseService.getActivatedLicenseCode();
     final mensaje = Uri.encodeComponent(
-      'Hola, tengo un problema con mi licencia de PosJVL.\n\nCódigo: ${licenseCode ?? "N/A"}',
+      'Hola, tengo un problema con mi licencia de ExpressPos.\n\nCódigo: ${licenseCode ?? "N/A"}',
     );
     final url = Uri.parse(
       'https://wa.me/${_whatsAppJavier.replaceAll(RegExp(r'[^\d]'), '')}?text=$mensaje',

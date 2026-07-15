@@ -60,7 +60,7 @@ class LicenseExpiredScreen extends StatelessWidget {
 
               // Subtítulo
               Text(
-                'Tu licencia de PosJVL ha vencido',
+                'Tu licencia de ExpressPos ha vencido',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.red.shade600,
@@ -164,7 +164,7 @@ class LicenseExpiredScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Contacta a Javier para renovar tu licencia y continuar usando PosJVL',
+                        'Contacta a Javier para renovar tu licencia y continuar usando ExpressPos',
                         style: TextStyle(
                           color: Colors.orange.shade700,
                         ),
@@ -414,8 +414,8 @@ class LicenseExpiredScreen extends StatelessWidget {
     final androidId = await LicenseService.getDeviceFingerprint();
     final mensaje = Uri.encodeComponent(
       androidId.isNotEmpty
-        ? 'Hola! Mi licencia de PosJVL ha expirado. Mi ID de dispositivo es: $androidId. Necesito renovarla por favor.'
-        : 'Hola! Mi licencia de PosJVL ha expirado. Necesito renovarla por favor.',
+        ? 'Hola! Mi licencia de ExpressPos ha expirado. Mi ID de dispositivo es: $androidId. Necesito renovarla por favor.'
+        : 'Hola! Mi licencia de ExpressPos ha expirado. Necesito renovarla por favor.',
     );
     final url = Uri.parse(
       'https://wa.me/${LicenseService.JAVIER_WHATSAPP.replaceAll(RegExp(r'[^\d]'), '')}?text=$mensaje',
@@ -440,8 +440,8 @@ class LicenseExpiredScreen extends StatelessWidget {
     final androidId = await LicenseService.getDeviceFingerprint();
     final phone = LicenseService.JAVIER_WHATSAPP.replaceAll(RegExp(r'[^\d]'), '');
     final mensaje = androidId.isNotEmpty
-        ? 'Hola! Mi ID de dispositivo PosJVL es: $androidId. Necesito renovar mi licencia.'
-        : 'Hola! Necesito renovar mi licencia de PosJVL.';
+        ? 'Hola! Mi ID de dispositivo ExpressPos es: $androidId. Necesito renovar mi licencia.'
+        : 'Hola! Necesito renovar mi licencia de ExpressPos.';
     final url = Uri.parse('sms:$phone?body=${Uri.encodeComponent(mensaje)}');
 
     try {

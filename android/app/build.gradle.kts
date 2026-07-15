@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.negociojvl.pos"
+    namespace = "com.hamburguesaexpress.sms"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.negociojvl.pos"
+        applicationId = "com.hamburguesaexpress.sms"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

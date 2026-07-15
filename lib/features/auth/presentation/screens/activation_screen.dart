@@ -128,7 +128,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
 
   Future<void> _contactWhatsApp() async {
     final phone = '5352046805';
-    final text = 'Hola! Quiero una licencia de PosJVL. Mi ID de dispositivo es: $_androidId';
+    final text = 'Hola! Quiero una licencia de ExpressPos. Mi ID de dispositivo es: $_androidId';
     final url = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(text)}');
 
     try {
@@ -185,7 +185,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'PosJVL',
+                'ExpressPos',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 32,
@@ -459,7 +459,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
 
               // Footer
               const Text(
-                '© 2026 PosJVL',
+                '© 2026 ExpressPos',
                 style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
               const SizedBox(height: 20),
