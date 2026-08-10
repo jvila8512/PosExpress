@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'hamburguesa_theme.dart';
+import 'theme_preferences.dart';
 
 /// Provider for the current theme mode.
 ///
-/// Defaults to dark mode (most screens are Cocina or show orders).
-/// The user can toggle this in Settings.
+/// Defaults to light mode. A persisted user choice (see [ThemePreferenceStore])
+/// is seeded into [ThemePrefs.initialMode] in `main()` before `runApp()`.
 /// After login, call [setDefaultThemeForRole] to apply the role-based default.
-final themeModeProvider = StateProvider<ThemeMode>((_) => ThemeMode.dark);
+final themeModeProvider = StateProvider<ThemeMode>((_) => ThemePrefs.initialMode ?? ThemeMode.light);
 
 /// Singleton provider for the Hamburguesa theme data (light + dark).
 final hamburguesaThemeProvider = Provider<HamburguesaThemeData>((_) {
@@ -28,8 +30,8 @@ final currentThemeProvider = Provider<ThemeData>((ref) {
     case ThemeMode.light:
       return theme.light;
     case ThemeMode.system:
-      // Fallback: the orchestrator can override this via platform brightness
-      return theme.dark;
+      final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      return brightness == Brightness.dark ? theme.dark : theme.light;
   }
 });
 
@@ -59,9 +61,14 @@ ThemeMode defaultThemeForRole(String role) {
   }
 }
 
+/// Returns the effective mode for a role, honoring a persisted explicit
+/// choice first (the user's choice overrides the role default, per spec).
+ThemeMode themeModeForRole(String role) =>
+    ThemePrefs.initialMode ?? defaultThemeForRole(role);
+
 /// Updates [themeModeProvider] based on the user's role.
 ///
 /// Call this after login/auth state resolves to apply the role-based default.
 void setDefaultThemeForRole(WidgetRef ref, String role) {
-  ref.read(themeModeProvider.notifier).state = defaultThemeForRole(role);
+  ref.read(themeModeProvider.notifier).state = themeModeForRole(role);
 }
