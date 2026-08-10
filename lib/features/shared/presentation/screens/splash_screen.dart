@@ -1,19 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/config/theme/theme_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:etecsa/core/security/license_service.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/database_backup_service.dart';
 import 'package:etecsa/core/services/export_service.dart';
-import 'package:etecsa/features/license/presentation/screens/license_expired_screen.dart';
+import 'package:etecsa/core/services/startup_flow.dart';
 
 const _secureStorage = FlutterSecureStorage();
 
+/// Timeout global del arranque: si pasa sin completar el flujo, fail-open
+/// a login/register en lugar de quedar colgado en el loader.
+const _startupTimeout = Duration(seconds: 10);
+
+/// Tiempo máximo que esperamos por la consulta de usuarios en el fallback
+/// cuando el arranque hizo timeout (para saber si vamos a register o login).
+const _fallbackUsersTimeout = Duration(seconds: 2);
+
 class SplashScreen extends ConsumerStatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({
+    super.key,
+    this.startupSteps,
+    this.hasUsersOverride,
+  });
+
+  /// Steps de arranque alternativos (solo tests): reemplazan la cadena real.
+  @visibleForTesting
+  final List<StartupStep>? startupSteps;
+
+  /// Fuente de "¿hay usuarios?" (solo tests): evita tocar la DB real y permite
+  /// verificar el destino del fail-open de forma determinista.
+  @visibleForTesting
+  final Future<bool> Function()? hasUsersOverride;
 
   @override
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
@@ -27,68 +48,76 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initApp() async {
-    try {
-      final db = AppDatabase.instance;
-      // Crear admin por defecto si no existe
-      await db.createDefaultAdmin();
-      // Crear usuario jefe hardcodeado
-      await db.createDefaultJefe();
-      // Inicializar planes de licencias por defecto
-      await db.initDefaultPlans();
-      // Inicializar auto-backup según configuración
-      await DatabaseBackupService.instance.initAutoBackup();
-      // Limpieza semanal de exportaciones (archivos >7 días)
-      ExportService.instance.weeklyCleanupExports();
-      debugPrint('=== APP INIT DONE ===');
-    } catch (e) {
-      debugPrint('Error init: $e');
+    final steps = widget.startupSteps ?? _buildStartupSteps();
+    final result = await runStartupFlow(
+      timeout: _startupTimeout,
+      log: (m) => debugPrint('[splash] $m'),
+      steps: steps,
+    );
+
+    if (!mounted) return;
+    if (result.timedOut) {
+      debugPrint(
+        '[splash] TIMEOUT colgado en ${result.hangingStep} -> fail-open',
+      );
+      _goFallback();
+      return;
     }
-    // Luego verificar licencia
-    _checkLicense();
+
+    _decideRoute();
   }
 
-  Future<void> _checkLicense() async {
+  /// Cadena de arranque real: pasos aislados + fence de 10s (spec R1/R2).
+  /// El último paso resuelve la decisión de ruta a partir de datos ya
+  /// capturados; las side-effects (revocar licencia, tema por rol) se
+  /// aplican después, fuera del fence, en [_applyDecision].
+  List<StartupStep> _buildStartupSteps() => [
+        (name: 'db-init', run: () async {
+          final db = AppDatabase.instance;
+          await db.createDefaultAdmin();
+          await db.createDefaultJefe();
+          await db.initDefaultPlans();
+        }),
+        (name: 'backup-init', run: () async {
+          await DatabaseBackupService.instance.initAutoBackup();
+        }),
+        (name: 'exports-cleanup', run: () async {
+          ExportService.instance.weeklyCleanupExports();
+        }),
+      ];
+
+  Future<void> _decideRoute() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 1500));
+      debugPrint('[splash] === CHECK - LICENSE FLOW ===');
 
-      if (!mounted) return;
-
-      debugPrint('=== SPLASH CHECK - LICENSE FLOW ===');
-
-      // 1. Verificar si hay usuarios
       final db = AppDatabase.instance;
+
+      // 1. Usuarios existentes
       final users = await db.getAllUsers();
-      final hasUsers = users.isNotEmpty;
-
-      debugPrint('Has users: $hasUsers');
-
-      // 2. Si NO hay usuarios -> Ir a registro
-      if (!hasUsers) {
-        debugPrint('Va a Registro (sin usuarios)');
+      if (!mounted) return;
+      if (users.isEmpty) {
+        debugPrint('[splash] Va a Registro (sin usuarios)');
         context.go('/register');
         return;
       }
 
-      // 3. Verificar si hay licencia activada en secure_storage
+      // 2. Licencia activada en secure_storage
       final activatedLicense = await LicenseService.getActivatedLicenseCode();
-      debugPrint('Activated license: $activatedLicense');
-
-      // 4. Si no hay licencia -> Ir a Login (mostrará "activar licencia")
+      if (!mounted) return;
       if (activatedLicense == null || activatedLicense.isEmpty) {
-        debugPrint('Va a Login (sin licencia activada)');
+        debugPrint('[splash] Va a Login (sin licencia activada)');
         context.go('/login');
         return;
       }
 
-      // 5. Si hay licencia -> Validar con protección anti-manipulación
-      debugPrint('Validando licencia con protección...');
-      final validationResult = await LicenseService.validateLicenseWithTamperProtection(db);
+      // 3. Validación con protección anti-manipulación
+      final validationResult =
+          await LicenseService.validateLicenseWithTamperProtection(db);
+      if (!mounted) return;
 
-      debugPrint('License validation result: isValid=${validationResult.isValid}, isExpired=${validationResult.isExpired}');
-
-      // 6. Si la licencia está vencida -> Mostrar pantalla de licencia vencida
+      // 4. Licencia vencida -> pantalla dedicada
       if (validationResult.isExpired) {
-        debugPrint('Va a LicenseExpiredScreen');
+        debugPrint('[splash] Va a LicenseExpiredScreen');
         context.go('/license-expired', extra: {
           'expiredDate': validationResult.expiredDate,
           'daysElapsed': validationResult.daysElapsed,
@@ -97,81 +126,118 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         return;
       }
 
-    // 7. Si la licencia no es válida (otro error)
-    if (!validationResult.isValid) {
-      debugPrint('Licencia inválida: ${validationResult.errorMessage}');
-      // Ir a login, desde ahí puede activar licencia
-      context.go('/login');
-      return;
-    }
-
-    // 7.5. Verificar que el Android ID del código coincida con el dispositivo
-    final deviceAndroidId = await LicenseService.getDeviceFingerprint();
-    final licenseParts = activatedLicense.split('-');
-    // Device ID puede contener guiones: todo entre pos 5 y el ultimo (hash)
-    final deviceIdFromLicense = licenseParts.length > 6
-        ? licenseParts.sublist(5, licenseParts.length - 1).join('-')
-        : (licenseParts.length > 5 ? licenseParts[5] : '');
-    if (deviceIdFromLicense.isNotEmpty && deviceIdFromLicense != 'DEV') {
-      if (deviceIdFromLicense != deviceAndroidId) {
-        debugPrint('Android ID mismatch! Licencia vinculada a $deviceIdFromLicense, dispositivo actual: $deviceAndroidId');
-        // Revocar licencia — fue generada para otro dispositivo
-        await _secureStorage.delete(key: 'activated_license');
-        await _secureStorage.delete(key: 'license_key');
-        if (mounted) {
-          context.go('/login');
-        }
+      // 5. Licencia inválida (otro error) -> login (desde ahí puede activar)
+      if (!validationResult.isValid) {
+        debugPrint('[splash] Licencia inválida: ${validationResult.errorMessage}');
+        context.go('/login');
         return;
       }
-      debugPrint('Android ID verificado: coincide con la licencia');
-    }
 
-    // 8. Licencia válida -> Verificar sesión activa (< 24h)
+      // 6. Verificar vínculo Android ID (no-fatal, 3s máximo)
+      final deviceAndroidId =
+          await LicenseService.getDeviceFingerprintOrNull();
+      if (!mounted) return;
+
+      if (deviceAndroidId != null) {
+        final licenseParts = activatedLicense.split('-');
+        final deviceIdFromLicense = licenseParts.length > 6
+            ? licenseParts.sublist(5, licenseParts.length - 1).join('-')
+            : (licenseParts.length > 5 ? licenseParts[5] : '');
+        if (deviceIdFromLicense.isNotEmpty && deviceIdFromLicense != 'DEV') {
+          if (deviceIdFromLicense != deviceAndroidId) {
+            debugPrint(
+              '[splash] Android ID mismatch! Licencia vinculada a '
+              '$deviceIdFromLicense, dispositivo actual: $deviceAndroidId',
+            );
+            // Revocar licencia — fue generada para otro dispositivo
+            await _secureStorage.delete(key: 'activated_license');
+            await _secureStorage.delete(key: 'license_key');
+            if (mounted) {
+              context.go('/login');
+            }
+            return;
+          }
+          debugPrint('[splash] Android ID verificado: coincide con la licencia');
+        }
+      } else {
+        debugPrint(
+          '[splash] Huella no disponible: se omite la verificación de vínculo',
+        );
+      }
+
+      // 7. Sesión activa (< 24h)
       final sessionToken = await _secureStorage.read(key: 'session_token');
       final sessionTime = await _secureStorage.read(key: 'session_time');
+      if (!mounted) return;
 
-      bool sessionActiva = false;
-      if (sessionToken != null && sessionToken.isNotEmpty && sessionTime != null) {
+      var sessionActive = false;
+      if (sessionToken != null &&
+          sessionToken.isNotEmpty &&
+          sessionTime != null) {
         final lastLogin = DateTime.tryParse(sessionTime);
         if (lastLogin != null) {
-          final diff = DateTime.now().difference(lastLogin);
-          if (diff.inHours < 24) {
-            sessionActiva = true;
-          }
+          sessionActive =
+              DateTime.now().difference(lastLogin).inHours < 24;
         }
       }
 
-      debugPrint('Session activa: $sessionActiva');
+      debugPrint('[splash] Session activa: $sessionActive');
 
-      // 9. Si sesión activa -> Ir a Home
-      if (sessionActiva) {
-        debugPrint('Va a Home (sesión activa)');
-        // Arranque en frío con sesión: aplicar tema por rol antes del primer frame
+      // 8. Sesión activa -> Home (con tema por rol antes del primer frame)
+      if (sessionActive) {
         final savedRole = await _secureStorage.read(key: 'user_role') ?? '';
-        if (savedRole.isNotEmpty) {
+        if (mounted && savedRole.isNotEmpty) {
           setDefaultThemeForRole(ref, savedRole);
         }
-        context.go('/');
+        if (mounted) {
+          context.go('/');
+        }
         return;
       }
 
-      // 10. Si no hay sesión activa -> Ir a Login
-      debugPrint('Va a Login (sin sesión activa)');
+      // 9. Sin sesión activa -> Login
+      debugPrint('[splash] Va a Login (sin sesión activa)');
       context.go('/login');
-
     } catch (e) {
-      debugPrint('Error splash: $e');
+      debugPrint('[splash] Error splash: $e');
       if (mounted) {
-        // En caso de error, ir a login
         context.go('/login');
       }
     }
   }
 
+  /// Fallback fail-open tras timeout global: sabe si hay usuarios para decidir
+  /// entre /register y /login. Si la consulta falla, va a /login (el router
+  /// real redirige a /register cuando el sistema está en primera vez).
+  Future<void> _goFallback() async {
+    if (!mounted) return;
+
+    var hasUsers = true;
+    try {
+      if (widget.hasUsersOverride != null) {
+        hasUsers = await widget
+            .hasUsersOverride!()
+            .timeout(_fallbackUsersTimeout);
+      } else {
+        final users = await AppDatabase.instance
+            .getAllUsers()
+            .timeout(_fallbackUsersTimeout);
+        hasUsers = users.isNotEmpty;
+      }
+    } catch (e) {
+      debugPrint('[splash] Fallback: no se pudo consultar usuarios ($e) -> login');
+      hasUsers = true;
+    }
+
+    if (!mounted) return;
+    debugPrint('[splash] Fail-open -> ${hasUsers ? '/login' : '/register'}');
+    context.go(hasUsers ? '/login' : '/register');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.colorCeleste,
+      backgroundColor: AppColors.accent,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -188,9 +254,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 child: Image.asset(
                   'assets/images/logo.png',
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  errorBuilder: (_, __, ___) => Icon(
                     Icons.store_rounded,
-                    color: AppTheme.colorCeleste,
+                    color: AppColors.accent,
                     size: 60,
                   ),
                 ),

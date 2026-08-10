@@ -25,6 +25,7 @@ build_log.txt
 build_output.log
 C?*
 !lib/config/
+!lib/core/
 !lib/features/clients/
 !lib/features/contacts/
 !lib/features/categories/
