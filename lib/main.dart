@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:etecsa/config/config.dart';
+import 'package:etecsa/config/theme/theme_preferences.dart';
 import 'package:etecsa/config/theme/theme_provider.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/sms/infrastructure/services/broadcast_receiver.dart';
@@ -42,6 +43,14 @@ void main() async {
 
   // Inicializar SMS BroadcastReceiver
   _initSmsReceiver();
+
+  // Seed la preferencia de tema persistida antes del primer frame:
+  // evita el flash del tema incorrecto y alimenta el default del provider.
+  try {
+    ThemePrefs.initialMode = await ThemePreferenceStore.read();
+  } catch (e) {
+    debugPrint('Error reading theme preference: $e');
+  }
 
   runApp(
     const ProviderScope(child: MainApp())

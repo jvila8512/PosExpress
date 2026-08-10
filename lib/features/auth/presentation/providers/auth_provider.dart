@@ -6,6 +6,7 @@ import 'package:etecsa/features/auth/infrastructure/repositories/auth_repository
 import 'package:etecsa/features/auth/infrastructure/datasources/auth_datasource_impl.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/security/license_service.dart';
+import 'package:etecsa/config/theme/theme_provider.dart';
 
 /// Provider para el datasource
 final _authDataSourceProvider = Provider<AuthDataSourceImpl>((ref) {
@@ -60,6 +61,7 @@ class AuthNotifier extends Notifier<AuthState> {
           user: user,
           authStatus: AuthStatus.authenticated,
         );
+        _applyThemeForUser(user);
       } on WrongCredentials {
         final isFirstTime = await _isFirstTimeLogin();
         
@@ -70,6 +72,7 @@ class AuthNotifier extends Notifier<AuthState> {
             user: user,
             authStatus: AuthStatus.authenticated,
           );
+          _applyThemeForUser(user);
         } else {
           _logout('Usuario o contraseña incorrectos');
         }
@@ -156,6 +159,15 @@ class AuthNotifier extends Notifier<AuthState> {
 
   void clearError() {
     state = state.copyWith(errorMessage: '');
+  }
+
+  /// Aplica el tema por rol (cocina→dark, resto→light) tras autenticar.
+  /// Usa el primer rol de la lista como rol primario. Una preferencia
+  /// explícita guardada por el usuario tiene prioridad (ThemePrefs.initialMode).
+  void _applyThemeForUser(auth.User user) {
+    if (user.roles.isNotEmpty) {
+      ref.read(themeModeProvider.notifier).state = themeModeForRole(user.roles.first);
+    }
   }
 }
 

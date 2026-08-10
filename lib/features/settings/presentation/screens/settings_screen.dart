@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:etecsa/features/shared/shared.dart';
 import 'package:etecsa/features/shared/services/KeyValueStorageService.dart';
 import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/theme_preferences.dart';
+import 'package:etecsa/config/theme/theme_provider.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/database_backup_service.dart';
 import 'package:etecsa/core/services/test_data_generator.dart';
@@ -125,6 +128,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ] else ...[
         // Admin/SuperAdmin: ven todo
+                // Sección Tema
+                const Text('Tema', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                const Text('Modo de color de la app. "Sistema" sigue el brillo del teléfono.'),
+                const SizedBox(height: 12),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final themeMode = ref.watch(themeModeProvider);
+                    return SegmentedButton<ThemeMode>(
+                      segments: const [
+                        ButtonSegment(
+                          value: ThemeMode.light,
+                          icon: Icon(Icons.light_mode_outlined),
+                          label: Text('Claro'),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.dark,
+                          icon: Icon(Icons.dark_mode_outlined),
+                          label: Text('Oscuro'),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.system,
+                          icon: Icon(Icons.brightness_auto_outlined),
+                          label: Text('Sistema'),
+                        ),
+                      ],
+                      selected: {themeMode},
+                      onSelectionChanged: (selection) async {
+                        final mode = selection.first;
+                        ref.read(themeModeProvider.notifier).state = mode;
+                        await ThemePreferenceStore.write(mode);
+                      },
+                    );
+                  },
+                ),
+                const Divider(height: 32),
                 // Sección Modo Kiosco
                 const Text('Modo Kiosco', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),

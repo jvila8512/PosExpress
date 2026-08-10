@@ -30,11 +30,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _loadAndroidId() async {
-    final id = await LicenseService.getDeviceFingerprint();
-    if (mounted) {
-      setState(() {
-        _androidId = id;
-      });
+    try {
+      final id = await LicenseService.getDeviceFingerprint();
+      if (mounted) {
+        setState(() {
+          _androidId = id;
+        });
+      }
+    } catch (e) {
+      // Fingerprint no es crítico en login: si falla, no mostramos el chip.
+      debugPrint('Error loading android id: $e');
     }
   }
 
@@ -104,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
         return GestureDetector(
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
           child: Scaffold(
-            backgroundColor: Colors.white,
             body: SafeArea(
               child: isTablet
                   ? _buildTabletLayout(context, constraints)
@@ -642,8 +646,6 @@ Widget _buildActiveLicenseCard() {
                   decoration: InputDecoration(
                     labelText: 'Usuario',
                     prefixIcon: const Icon(Icons.person_outline),
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide.none,
@@ -666,8 +668,6 @@ Widget _buildActiveLicenseCard() {
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
                     prefixIcon: const Icon(Icons.lock_outline),
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide.none,
