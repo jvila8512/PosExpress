@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/shared/services/KeyValueStorageService.dart';
 import 'package:share_plus/share_plus.dart';
@@ -450,7 +450,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                               decoration: BoxDecoration(
                                 color: widget.isPrefactura
                                     ? Colors.orange.withValues(alpha: 0.1)
-                                    : AppTheme.colorMorado.withValues(
+                                    : AppColors.accent.withValues(
                                         alpha: 0.1,
                                       ),
                                 shape: BoxShape.circle,
@@ -461,7 +461,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                     : Icons.check_circle,
                                 color: widget.isPrefactura
                                     ? Colors.orange
-                                    : AppTheme.colorMorado,
+                                    : AppColors.accent,
                                 size: 40,
                               ),
                             ),
@@ -477,7 +477,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: widget.isPrefactura
                                     ? Colors.orange
-                                    : AppTheme.colorMorado,
+                                    : AppColors.accent,
                               ),
                             ),
                             if (_businessPhone.isNotEmpty)
@@ -609,7 +609,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                       vertical: 8,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.colorMorado.withValues(
+                                      color: AppColors.accent.withValues(
                                         alpha: 0.08,
                                       ),
                                       borderRadius: const BorderRadius.vertical(
@@ -777,7 +777,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                               style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: AppTheme.colorMorado,
+                                                color: AppColors.accent,
                                               ),
                                             ),
                                           ],
@@ -880,7 +880,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 fontStyle: FontStyle.italic,
-                                color: AppTheme.colorCeleste,
+                                color: AppColors.accent,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -1006,18 +1006,18 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                 },
                                 icon: Icon(
                                   Icons.share,
-                                  color: AppTheme.colorCeleste,
+                                  color: AppColors.accent,
                                 ),
                                 label: Text(
                                   'Compartir de otra forma',
                                   style: TextStyle(
-                                    color: AppTheme.colorCeleste,
+                                    color: AppColors.accent,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   side: BorderSide(
-                                    color: AppTheme.colorCeleste,
+                                    color: AppColors.accent,
                                   ),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
@@ -1046,7 +1046,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                 style: const TextStyle(color: Colors.white),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.colorMorado,
+                                backgroundColor: AppColors.accent,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
                                 ),

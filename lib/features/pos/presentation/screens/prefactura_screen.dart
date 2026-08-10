@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:etecsa/features/pos/presentation/providers/pos_provider.dart';
 import 'package:etecsa/features/products/presentation/providers/products_provider.dart';
 import 'package:etecsa/features/products/presentation/providers/categories_provider.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/pos/presentation/screens/invoice_screen.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:etecsa/core/database/app_database.dart';
@@ -99,7 +99,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
           icon: const Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       ),
       body: TabBarView(
@@ -135,7 +135,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
           icon: const Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       ),
       body: Row(
@@ -323,14 +323,14 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
                   child: Icon(
                     Icons.chevron_right,
                     size: 20,
-                    color: AppTheme.colorCeleste,
+                    color: AppColors.accent,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Icon(
                   Icons.category_outlined,
                   size: 18,
-                  color: AppTheme.colorCeleste,
+                  color: AppColors.accent,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -346,7 +346,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.colorCeleste.withValues(alpha: 0.15),
+                    color: AppColors.accent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -354,7 +354,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.colorCeleste,
+                      color: AppColors.accent,
                     ),
                   ),
                 ),
@@ -436,12 +436,12 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: isInCart
-              ? AppTheme.colorMorado.withValues(alpha: 0.08)
+              ? AppColors.accent.withValues(alpha: 0.08)
               : (hasStock ? Colors.white : Colors.grey.shade50),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isInCart
-                ? AppTheme.colorMorado
+                ? AppColors.accent
                 : (hasStock
                     ? (stock <= 3 ? Colors.orange : Colors.grey.shade300)
                     : Colors.orange.shade300),
@@ -474,7 +474,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.colorMorado,
+                        color: AppColors.accent,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -512,7 +512,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
                 '\$${product.unitPrice.toStringAsFixed(2)}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppTheme.colorMorado,
+                  color: AppColors.accent,
                   fontWeight: FontWeight.bold,
                   fontSize: 10,
                 ),
@@ -580,7 +580,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
   Widget _buildInitial(String name) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+        color: AppColors.accent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Center(
@@ -589,7 +589,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppTheme.colorCeleste,
+            color: AppColors.accent,
           ),
         ),
       ),
@@ -603,7 +603,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
       children: [
         Container(
           padding: const EdgeInsets.all(12),
-          color: AppTheme.colorCeleste,
+          color: AppColors.accent,
           child: Row(
             children: [
               const Icon(Icons.shopping_cart, color: Colors.white),
@@ -693,7 +693,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
                                       fontSize: 11,
                                       color: item.isWholesale
                                           ? Colors.green.shade700
-                                          : AppTheme.colorCeleste,
+                                          : AppColors.accent,
                                     ),
                                   ),
                                 ],
@@ -724,7 +724,7 @@ class _PrefacturaScreenState extends ConsumerState<PrefacturaScreen>
                                     borderRadius:
                                         BorderRadius.circular(8),
                                     borderSide: const BorderSide(
-                                      color: AppTheme.colorMorado,
+                                      color: AppColors.accent,
                                       width: 2,
                                     ),
                                   ),

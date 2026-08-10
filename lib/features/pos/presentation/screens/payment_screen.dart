@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/services/pagoxmovil_sms_parser.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -485,7 +485,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 child: ElevatedButton(
                   onPressed: (_isFullPayment && _transferAmountError == null) ? _confirm : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.colorMorado,
+                        backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: Colors.grey.shade300,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -511,7 +511,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: selected ? AppTheme.colorCeleste : Colors.grey.shade200,
+            color: selected ? AppColors.accent : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(10),
             border: selected ? null : Border.all(color: Colors.grey.shade300),
           ),

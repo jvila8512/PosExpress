@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' hide Column;
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/shared/services/KeyValueStorageService.dart';
 import 'package:etecsa/features/products/presentation/providers/products_provider.dart';
@@ -80,7 +80,7 @@ class _ImportProductsScreenState extends ConsumerState<ImportProductsScreen> {
                   },
           ),
           title: const Text('Importar Productos'),
-          backgroundColor: AppTheme.colorCeleste,
+          backgroundColor: AppColors.accent,
           foregroundColor: Colors.white,
         ),
         body: _isLoading
@@ -110,7 +110,7 @@ class _ImportProductsScreenState extends ConsumerState<ImportProductsScreen> {
                                   style: TextStyle(fontSize: 16),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.colorCeleste,
+                                  backgroundColor: AppColors.accent,
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -158,7 +158,7 @@ class _ImportProductsScreenState extends ConsumerState<ImportProductsScreen> {
                               children: [
                                 Icon(
                                   Icons.preview,
-                                  color: AppTheme.colorCeleste,
+                                  color: AppColors.accent,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -337,11 +337,11 @@ class _ImportProductsScreenState extends ConsumerState<ImportProductsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: AppTheme.colorCeleste.withValues(alpha: 0.1),
+          backgroundColor: AppColors.accent.withValues(alpha: 0.1),
           child: Text(
             cat.name[0].toUpperCase(),
             style: TextStyle(
-              color: AppTheme.colorCeleste,
+              color: AppColors.accent,
               fontWeight: FontWeight.bold,
             ),
           ),

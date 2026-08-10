@@ -5,7 +5,7 @@ import 'package:etecsa/features/products/presentation/providers/products_provide
 import 'package:etecsa/features/products/presentation/providers/categories_provider.dart';
 import 'package:etecsa/features/products/presentation/screens/product_form_screen.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart' show Product;
 import 'package:etecsa/core/services/export_service.dart';
 import 'package:etecsa/features/shared/widgets/export_options_dialog.dart';
@@ -119,7 +119,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               onPressed: () => context.push('/products/new'),
               icon: const Icon(Icons.add),
               label: const Text('Nuevo'),
-              backgroundColor: AppTheme.colorMorado,
+              backgroundColor: AppColors.accent,
             ),
     ),
     );
@@ -183,7 +183,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+            color: AppColors.accent.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
@@ -192,7 +192,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.colorCeleste,
+                color: AppColors.accent,
               ),
             ),
           ),
@@ -208,7 +208,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         subtitle: Text(
           '\$${product.unitPrice.toStringAsFixed(2)}',
           style: TextStyle(
-            color: isInactive ? Colors.red.shade300 : AppTheme.colorMorado,
+            color: isInactive ? Colors.red.shade300 : AppColors.accent,
             fontWeight: FontWeight.bold,
             fontSize: 13,
           ),

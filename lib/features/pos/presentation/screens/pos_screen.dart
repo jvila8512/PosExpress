@@ -12,7 +12,7 @@ import 'package:etecsa/core/services/export_service.dart';
 import 'package:etecsa/features/shared/widgets/export_options_dialog.dart';
 import 'dart:async';
 import 'dart:io';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/pos/presentation/screens/invoice_screen.dart';
 import 'package:etecsa/features/pos/presentation/screens/payment_screen.dart';
@@ -553,14 +553,14 @@ class _PosScreenState extends ConsumerState<PosScreen>
                   child: Icon(
                     Icons.chevron_right,
                     size: 20,
-                    color: AppTheme.colorCeleste,
+                    color: AppColors.accent,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Icon(
                   Icons.category_outlined,
                   size: 18,
-                  color: AppTheme.colorCeleste,
+                  color: AppColors.accent,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -578,7 +578,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.colorCeleste.withValues(alpha: 0.15),
+                    color: AppColors.accent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -586,7 +586,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.colorCeleste,
+                      color: AppColors.accent,
                     ),
                   ),
                 ),
@@ -666,12 +666,12 @@ class _PosScreenState extends ConsumerState<PosScreen>
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: isInCart
-              ? AppTheme.colorMorado.withValues(alpha: 0.08)
+              ? AppColors.accent.withValues(alpha: 0.08)
               : (hasStock ? Colors.white : Colors.grey.shade50),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isInCart
-                ? AppTheme.colorMorado
+                ? AppColors.accent
                 : (hasStock
                       ? (stock <= 3 ? Colors.orange : Colors.grey.shade300)
                       : Colors.orange.shade300),
@@ -708,7 +708,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.colorMorado,
+                        color: AppColors.accent,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -748,7 +748,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                 '\$${product.unitPrice.toStringAsFixed(2)}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppTheme.colorMorado,
+                  color: AppColors.accent,
                   fontWeight: FontWeight.bold,
                   fontSize: 10,
                 ),
@@ -823,7 +823,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
   Widget _buildInitial(String name) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+        color: AppColors.accent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Center(
@@ -832,7 +832,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppTheme.colorCeleste,
+            color: AppColors.accent,
           ),
         ),
       ),
@@ -845,7 +845,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
         // Header
         Container(
           padding: const EdgeInsets.all(12),
-          color: AppTheme.colorCeleste,
+          color: AppColors.accent,
           child: Row(
             children: [
               const Icon(Icons.shopping_cart, color: Colors.white),
@@ -959,12 +959,12 @@ class _PosScreenState extends ConsumerState<PosScreen>
                                             '\$${item.unitPrice.toStringAsFixed(0)} × ${_formatQty(item.quantity)} = \$${item.subtotal.toStringAsFixed(0)}',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: AppTheme.colorCeleste,
+                                              color: AppColors.accent,
                                               decoration: _isVendedor
                                                   ? TextDecoration.none
                                                   : TextDecoration.underline,
-                                              decorationColor: AppTheme
-                                                  .colorCeleste
+                                              decorationColor: AppColors
+                                                  .accent
                                                   .withValues(alpha: 0.4),
                                             ),
                                           ),
@@ -998,7 +998,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide: const BorderSide(
-                                      color: AppTheme.colorMorado,
+                                      color: AppColors.accent,
                                       width: 2,
                                     ),
                                   ),
@@ -1167,7 +1167,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                                   ? null
                                   : () => _navigateToPayment(cart.subtotal),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.colorMorado,
+                                backgroundColor: AppColors.accent,
                                 foregroundColor: Colors.white,
                               ),
                               child: const Text('COBRAR'),
@@ -1480,7 +1480,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
             const Icon(
               Icons.point_of_sale,
               size: 80,
-              color: AppTheme.colorCeleste,
+              color: AppColors.accent,
             ),
             const SizedBox(height: 24),
             const Text(
@@ -1534,7 +1534,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                       );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.colorMorado,
+                  backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.all(16),
                 ),
@@ -1682,7 +1682,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                     child: const Text(
                       'Exportar',
                       style: TextStyle(
-                        color: AppTheme.colorCeleste,
+                        color: AppColors.accent,
                         fontSize: 13,
                       ),
                     ),
@@ -1701,10 +1701,10 @@ class _PosScreenState extends ConsumerState<PosScreen>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.colorCeleste.withValues(alpha: 0.08),
+                      color: AppColors.accent.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppTheme.colorCeleste.withValues(alpha: 0.3),
+                        color: AppColors.accent.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -1775,7 +1775,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.colorMorado.withValues(alpha: 0.1),
+                          color: AppColors.accent.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -1783,7 +1783,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.colorMorado,
+                            color: AppColors.accent,
                           ),
                         ),
                       ),
@@ -1822,7 +1822,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                             decoration: BoxDecoration(
                               color: isReturn
                                   ? Colors.orange.shade50
-                                  : AppTheme.colorCeleste.withValues(
+                                  : AppColors.accent.withValues(
                                       alpha: 0.1,
                                     ),
                               borderRadius: BorderRadius.circular(6),
@@ -1832,7 +1832,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                               size: 18,
                               color: isReturn
                                   ? Colors.orange
-                                  : AppTheme.colorCeleste,
+                                  : AppColors.accent,
                             ),
                           ),
                           title: Text(
@@ -1859,7 +1859,7 @@ class _PosScreenState extends ConsumerState<PosScreen>
                               fontWeight: FontWeight.bold,
                               color: isReturn
                                   ? Colors.orange
-                                  : AppTheme.colorMorado,
+                                  : AppColors.accent,
                             ),
                           ),
                           children: [

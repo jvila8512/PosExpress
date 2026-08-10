@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:intl/intl.dart';
@@ -115,7 +115,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> {
       drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
         title: const Text('Historial de Pedidos'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -250,13 +250,13 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isReturn ? Colors.orange.shade50 : AppTheme.colorCeleste.withValues(alpha: 0.1),
+                      color: isReturn ? Colors.orange.shade50 : AppColors.accent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       isReturn ? Icons.undo : Icons.receipt,
                       size: 20,
-                      color: isReturn ? Colors.orange : AppTheme.colorCeleste,
+                      color: isReturn ? Colors.orange : AppColors.accent,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -286,7 +286,7 @@ class _OrdersHistoryScreenState extends State<OrdersHistoryScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
-                          color: isReturn ? Colors.orange : AppTheme.colorMorado,
+                          color: isReturn ? Colors.orange : AppColors.accent,
                         ),
                       ),
                       if (items != null)

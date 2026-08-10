@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:etecsa/features/products/presentation/providers/products_provider.dart';
 import 'package:etecsa/features/products/presentation/providers/categories_provider.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 
 class ProductFormScreen extends ConsumerStatefulWidget {
@@ -503,7 +503,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.groups, size: 18, color: AppTheme.colorCeleste),
+                Icon(Icons.groups, size: 18, color: AppColors.accent),
                 const SizedBox(width: 8),
                 const Text(
                   'Precio por mayor',
@@ -548,7 +548,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Agregar regla'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.colorCeleste,
+                foregroundColor: AppColors.accent,
               ),
             ),
             const SizedBox(height: 16),
@@ -604,7 +604,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               )
             : const Icon(Icons.save),
         label: Text(_isLoading ? 'Guardando...' : 'Guardar'),
-        backgroundColor: AppTheme.colorMorado,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       ),
     );
