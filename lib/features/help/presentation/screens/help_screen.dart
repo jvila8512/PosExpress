@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/services/KeyValueStorageService.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
@@ -68,8 +68,8 @@ class _HelpScreenState extends State<HelpScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.colorCeleste,
-                          AppTheme.colorCeleste.withValues(alpha: 0.8),
+                          AppColors.accent,
+                          AppColors.accent.withValues(alpha: 0.8),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -1259,7 +1259,7 @@ Cada archivo tiene un menú (⋮) con estas opciones:
       children: [
         Row(
           children: [
-            Icon(icon, color: AppTheme.colorCeleste, size: 24),
+            Icon(icon, color: AppColors.accent, size: 24),
             const SizedBox(width: 8),
             Text(
               title,
@@ -1301,10 +1301,10 @@ Cada archivo tiene un menú (⋮) con estas opciones:
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+              color: AppColors.accent.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: AppTheme.colorCeleste, size: 24),
+            child: Icon(icon, color: AppColors.accent, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1348,7 +1348,7 @@ Cada archivo tiene un menú (⋮) con estas opciones:
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.colorCeleste.withValues(alpha: 0.2),
+          color: AppColors.accent.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -1356,10 +1356,10 @@ Cada archivo tiene un menú (⋮) con estas opciones:
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+              color: AppColors.accent.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: AppTheme.colorCeleste, size: 28),
+            child: Icon(icon, color: AppColors.accent, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(

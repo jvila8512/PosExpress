@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:etecsa/features/shared/shared.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:uuid/uuid.dart';
@@ -115,7 +115,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
       drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
         title: const Text('Usuarios'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.menu),
@@ -154,7 +154,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
               icon: const Icon(Icons.person_add),
               label: const Text('Crear Usuario'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.colorMorado,
+                backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
@@ -170,7 +170,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
               icon: const Icon(Icons.person_add),
               label: const Text('Agregar Vendedor'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.colorMorado,
+                backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
@@ -236,10 +236,10 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: isCurrentUser
-              ? AppTheme.colorMorado
+              ? AppColors.accent
               : isVendedor
                   ? Colors.green
-                  : AppTheme.colorCeleste,
+                  : AppColors.accent,
           child: Icon(
             isCurrentUser
                 ? Icons.person
@@ -261,12 +261,12 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
-                  color: AppTheme.colorMorado.withValues(alpha: 0.1),
+                  color: AppColors.accent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
                   'Vos',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.colorMorado),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.accent),
                 ),
               ),
             ],
@@ -277,14 +277,14 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: isVendedor ? Colors.green.shade100 : AppTheme.colorCeleste.withValues(alpha: 0.1),
+                color: isVendedor ? Colors.green.shade100 : AppColors.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 isVendedor ? 'Vendedor' : 'Admin',
                 style: TextStyle(
                   fontSize: 12,
-                  color: isVendedor ? Colors.green.shade700 : AppTheme.colorCeleste,
+                  color: isVendedor ? Colors.green.shade700 : AppColors.accent,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -343,7 +343,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
         onPressed: () => _showAddUserDialog(),
         icon: const Icon(Icons.person_add),
         label: const Text('Nuevo Usuario'),
-        backgroundColor: AppTheme.colorMorado,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       );
     }
@@ -353,7 +353,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
         onPressed: () => _showAddUserDialog(),
         icon: const Icon(Icons.person_add),
         label: const Text('Nuevo Vendedor'),
-        backgroundColor: AppTheme.colorMorado,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       );
     }
@@ -522,7 +522,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.colorMorado,
+                backgroundColor: AppColors.accent,
               ),
               child: const Text('Crear', style: TextStyle(color: Colors.white)),
             ),
@@ -635,7 +635,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                   );
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.colorMorado),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
               child: const Text('Guardar', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -682,7 +682,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.colorMorado,
+              backgroundColor: AppColors.accent,
             ),
             child: const Text('Guardar', style: TextStyle(color: Colors.white)),
           ),

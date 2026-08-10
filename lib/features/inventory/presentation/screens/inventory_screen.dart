@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/export_service.dart';
@@ -327,7 +327,7 @@ class _InventoryScreenState extends State<InventoryScreen>
               },
               icon: const Icon(Icons.add),
               label: const Text('Producto'),
-              backgroundColor: AppTheme.colorMorado,
+              backgroundColor: AppColors.accent,
               foregroundColor: Colors.white,
             )
           : null,
@@ -372,17 +372,17 @@ class _InventoryScreenState extends State<InventoryScreen>
             child: OutlinedButton.icon(
               onPressed: () =>
                   _showValuationBottomSheet(totalValue, totalValueSale),
-              icon: Icon(Icons.assessment, size: 18, color: AppTheme.colorCeleste),
+              icon: Icon(Icons.assessment, size: 18, color: AppColors.accent),
               label: Text(
                 'Valoración de Inventario',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.colorCeleste,
+                  color: AppColors.accent,
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppTheme.colorCeleste.withValues(alpha: 0.4)),
+                side: BorderSide(color: AppColors.accent.withValues(alpha: 0.4)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -472,7 +472,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
-                                    color: AppTheme.colorMorado,
+                                    color: AppColors.accent,
                                   ),
                                 ),
                               ],
@@ -587,7 +587,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: _allInCart(filteredProducts) ? Colors.red : AppTheme.colorMorado,
+                      color: _allInCart(filteredProducts) ? Colors.red : AppColors.accent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -637,13 +637,13 @@ class _InventoryScreenState extends State<InventoryScreen>
                     return Card(
                       margin: const EdgeInsets.only(bottom: 6),
                       color: isInCart
-                          ? AppTheme.colorMorado.withValues(alpha: 0.08)
+                          ? AppColors.accent.withValues(alpha: 0.08)
                           : null,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: isInCart
                             ? BorderSide(
-                                color: AppTheme.colorMorado,
+                                color: AppColors.accent,
                                 width: 1.5,
                               )
                             : BorderSide.none,
@@ -690,7 +690,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                               tooltip: 'Compra rápida',
                               onPressed: () => _showPurchaseDialog(product),
                               style: IconButton.styleFrom(
-                                foregroundColor: AppTheme.colorCeleste,
+                                foregroundColor: AppColors.accent,
                               ),
                             ),
                             // Al carrito
@@ -702,7 +702,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                               tooltip: 'Agregar al carrito',
                               onPressed: () => _addToCart(product),
                               style: IconButton.styleFrom(
-                                foregroundColor: AppTheme.colorMorado,
+                                foregroundColor: AppColors.accent,
                               ),
                             ),
                           ],
@@ -736,7 +736,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.colorMorado,
+                    color: AppColors.accent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -776,7 +776,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                   icon: const Icon(Icons.shopping_cart, size: 18),
                   label: const Text('Ver carrito'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.colorMorado,
+                    backgroundColor: AppColors.accent,
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -793,7 +793,7 @@ class _InventoryScreenState extends State<InventoryScreen>
         // Header: Carrito + total + items count
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          color: AppTheme.colorMorado.withValues(alpha: 0.05),
+          color: AppColors.accent.withValues(alpha: 0.05),
           child: Row(
             children: [
               Expanded(
@@ -815,7 +815,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.colorMorado,
+                  color: AppColors.accent,
                 ),
               ),
             ],
@@ -977,7 +977,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 13,
-                                  color: AppTheme.colorMorado,
+                                  color: AppColors.accent,
                                 ),
                               ),
                             ),
@@ -1008,8 +1008,8 @@ class _InventoryScreenState extends State<InventoryScreen>
                     icon: const Icon(Icons.arrow_back, size: 20),
                     label: const Text('Seguir comprando', style: TextStyle(fontSize: 14)),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.colorMorado,
-                      side: BorderSide(color: AppTheme.colorMorado),
+                      foregroundColor: AppColors.accent,
+                      side: BorderSide(color: AppColors.accent),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
@@ -1172,7 +1172,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                   const SizedBox(width: 12),
                   Text(
                     '\$${totalCost.toStringAsFixed(0)} total',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.colorMorado),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.accent),
                   ),
                 ],
               ),
@@ -1268,8 +1268,8 @@ class _InventoryScreenState extends State<InventoryScreen>
         dense: true,
         leading: CircleAvatar(
           radius: 16,
-          backgroundColor: AppTheme.colorCeleste.withValues(alpha: 0.15),
-          child: Icon(Icons.receipt, size: 16, color: AppTheme.colorCeleste),
+          backgroundColor: AppColors.accent.withValues(alpha: 0.15),
+          child: Icon(Icons.receipt, size: 16, color: AppColors.accent),
         ),
         title: Row(
           children: [
@@ -1301,7 +1301,7 @@ class _InventoryScreenState extends State<InventoryScreen>
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
-                color: AppTheme.colorMorado,
+                color: AppColors.accent,
               ),
             ),
           ],
@@ -1343,7 +1343,7 @@ class _InventoryScreenState extends State<InventoryScreen>
           icon: Icon(
             Icons.file_download,
             size: 18,
-            color: AppTheme.colorCeleste,
+            color: AppColors.accent,
           ),
         ),
         children: [
@@ -1400,7 +1400,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.colorMorado,
+                            color: AppColors.accent,
                           ),
                         ),
                       ),
@@ -1477,7 +1477,7 @@ class _InventoryScreenState extends State<InventoryScreen>
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 12),
           child: ListTile(
-            leading: const Icon(Icons.edit, color: AppTheme.colorMorado),
+            leading: const Icon(Icons.edit, color: AppColors.accent),
             title: const Text(
               'Ajuste Físico General',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -1585,14 +1585,14 @@ class _InventoryScreenState extends State<InventoryScreen>
       children: [
         Container(
           padding: const EdgeInsets.all(12),
-          color: AppTheme.colorMorado.withValues(alpha: 0.05),
+          color: AppColors.accent.withValues(alpha: 0.05),
           child: Row(
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => setState(() => _showBulkAdjust = false),
                 style: IconButton.styleFrom(
-                  foregroundColor: AppTheme.colorMorado,
+                  foregroundColor: AppColors.accent,
                 ),
               ),
               const Expanded(
@@ -1616,7 +1616,7 @@ class _InventoryScreenState extends State<InventoryScreen>
               ElevatedButton(
                 onPressed: _applyBulkAdjust,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.colorMorado,
+                  backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Aplicar'),
@@ -2868,7 +2868,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                     children: [
                       Icon(
                         Icons.assessment,
-                        color: AppTheme.colorCeleste,
+                        color: AppColors.accent,
                         size: 22,
                       ),
                       const SizedBox(width: 8),
@@ -2883,7 +2883,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                       PopupMenuButton<String>(
                         icon: Icon(
                           Icons.download,
-                          color: AppTheme.colorCeleste,
+                          color: AppColors.accent,
                           size: 22,
                         ),
                         tooltip: 'Exportar',
@@ -2953,7 +2953,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                         Icons.inventory,
                         '${_inventoryData.length}',
                         'Productos',
-                        AppTheme.colorCeleste,
+                        AppColors.accent,
                       ),
                       _buildValuationMetric(
                         Icons.money_off,
@@ -3124,7 +3124,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: AppTheme.colorMorado,
+                                    color: AppColors.accent,
                                   ),
                                 ),
                               ),

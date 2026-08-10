@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
 import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/exports/services/export_service.dart';
@@ -219,7 +218,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
             title: 'Pedidos hoy',
             value: _ordersLoaded ? '$_todayOrderCount' : '...',
             icon: Icons.receipt_long,
-            color: AppTheme.colorCeleste,
+            color: AppColors.accent,
           ),
           const SizedBox(height: 12),
 
@@ -523,7 +522,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+        color: AppColors.accent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -532,10 +531,10 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.colorCeleste.withValues(alpha: 0.2),
+              color: AppColors.accent.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: AppTheme.colorCeleste, size: 22),
+            child: Icon(icon, color: AppColors.accent, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -547,7 +546,7 @@ class _ExportImportScreenState extends ConsumerState<ExportImportScreen> {
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.colorCeleste,
+                    color: AppColors.accent,
                   ),
                 ),
                 const SizedBox(height: 4),

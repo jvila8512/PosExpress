@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:etecsa/features/shared/shared.dart';
 import 'package:etecsa/features/shared/services/KeyValueStorageService.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/config/theme/theme_preferences.dart';
 import 'package:etecsa/config/theme/theme_provider.dart';
 import 'package:etecsa/core/database/app_database.dart';
@@ -173,7 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: const Text('Activar Modo Kiosco'),
                   subtitle: const Text('Evita que toquen la navegación de Android'),
                   value: _kioscoMode,
-                  activeColor: AppTheme.colorCeleste,
+                  activeColor: AppColors.accent,
                   onChanged: (value) async {
                     if (value) {
                       // Pedir confirmación con PIN
@@ -214,7 +214,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: const Text('Activar Modo Prefactura'),
                   subtitle: const Text('Agrega "Prefactura" al menú lateral'),
                   value: _prefacturaMode,
-                  activeColor: AppTheme.colorCeleste,
+                  activeColor: AppColors.accent,
                   onChanged: (value) async {
                     await _storage.setKeyValue('prefactura_mode_enabled', value ? 'true' : 'false');
                     setState(() => _prefacturaMode = value);
@@ -233,7 +233,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? 'Activo: compras → almacén, ventas → PV'
                     : 'Desactivado: todo va al PV'),
                   value: _warehouseMode,
-                  activeColor: AppTheme.colorCeleste,
+                  activeColor: AppColors.accent,
                   onChanged: (value) async {
                     if (value) {
                       // Activar almacén
@@ -341,7 +341,7 @@ ListTile(
                   : _autoBackupFrequencyLabel
               : 'Desactivado'),
           value: _autoBackupEnabled,
-          activeColor: AppTheme.colorCeleste,
+          activeColor: AppColors.accent,
           onChanged: (value) async {
             await _backupService.setAutoBackupConfig(
               enabled: value,
@@ -381,7 +381,7 @@ ListTile(
         const Divider(height: 32),
         Row(
           children: [
-            Icon(Icons.cloud_outlined, color: AppTheme.colorCeleste),
+            Icon(Icons.cloud_outlined, color: AppColors.accent),
             const SizedBox(width: 8),
             const Text('Google Drive', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
@@ -927,7 +927,7 @@ ListTile(
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: Icon(Icons.warehouse, size: 48, color: AppTheme.colorCeleste),
+        icon: Icon(Icons.warehouse, size: 48, color: AppColors.accent),
         title: const Text('Almacén Activado'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,

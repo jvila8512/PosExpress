@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:uuid/uuid.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 
 const _secureStorage = FlutterSecureStorage();
@@ -172,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             alignment: Alignment.centerLeft,
             child: IconButton(
               onPressed: () => context.go('/login'),
-              icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.colorCeleste, size: 30),
+              icon: const Icon(Icons.arrow_back_rounded, color: AppColors.accent, size: 30),
             ),
           ),
           const SizedBox(height: 20),
@@ -188,12 +188,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Expanded(
           flex: 1,
           child: Container(
-            color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+            color: AppColors.accent.withValues(alpha: 0.1),
             padding: const EdgeInsets.all(40),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('MiNegocio POS', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.colorCeleste, fontWeight: FontWeight.bold)),
+                Text('MiNegocio POS', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -219,11 +219,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       width: size, height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: AppTheme.colorCeleste.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [BoxShadow(color: AppColors.accent.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: Image.asset('assets/images/logo.png', fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: AppTheme.colorCeleste, child: const Icon(Icons.storefront, size: 40, color: Colors.white))),
+        child: Image.asset('assets/images/logo.png', fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: AppColors.accent, child: const Icon(Icons.storefront, size: 40, color: Colors.white))),
       ),
     );
   }
@@ -232,7 +232,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Crear cuenta', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.colorCeleste, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        Text('Crear cuenta', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
         const SizedBox(height: 8),
         Text('Regístrate para comenzar', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey), textAlign: TextAlign.center),
         const SizedBox(height: 24),
@@ -253,7 +253,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         ElevatedButton(
           onPressed: _isLoading ? null : _createAccount,
-          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.colorMorado, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 0),
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 0),
           child: _isLoading 
             ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white))) 
             : const Text('CREAR CUENTA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -264,7 +264,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('¿Ya tienes cuenta? ', style: TextStyle(color: Colors.grey.shade600)),
-            GestureDetector(onTap: () => context.go('/login'), child: Text('Inicia sesión', style: TextStyle(color: AppTheme.colorMorado, fontWeight: FontWeight.bold))),
+            GestureDetector(onTap: () => context.go('/login'), child: Text('Inicia sesión', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold))),
           ],
         ),
       ],
@@ -279,7 +279,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       fillColor: Colors.grey.shade50,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: Colors.grey.shade200)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: AppTheme.colorCeleste, width: 2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: AppColors.accent, width: 2)),
       suffixIcon: suffix,
     );
   }

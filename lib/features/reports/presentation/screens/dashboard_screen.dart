@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -40,7 +40,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
         title: const Text('Inicio'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         leading: IconButton(icon: const Icon(Icons.menu), onPressed: () => _scaffoldKey.currentState?.openDrawer()),
       ),
       body: FutureBuilder(
@@ -198,7 +198,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 6),
       child: ListTile(
-        leading: Icon(icon, color: AppTheme.colorCeleste),
+        leading: Icon(icon, color: AppColors.accent),
         title: Text(title),
         trailing: const Icon(Icons.arrow_forward_ios, size: 14),
         onTap: () => context.go(route),

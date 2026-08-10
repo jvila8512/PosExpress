@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/license/presentation/screens/all_licenses_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -147,7 +147,7 @@ class _LicensesAdminScreenState extends ConsumerState<LicensesAdminScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de Licencias'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -1098,7 +1098,7 @@ class _CrearLicenciaScreenState extends State<CrearLicenciaScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crear Licencia'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -1347,7 +1347,7 @@ class _AgregarClienteScreenState extends State<AgregarClienteScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nuevo Cliente'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(

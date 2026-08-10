@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:etecsa/features/auth/presentation/providers/auth_provider.dart';
 import 'package:etecsa/features/auth/presentation/providers/login_form_provider.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/security/license_service.dart';
 import 'package:etecsa/core/database/app_database.dart';
 
@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Expanded(
           flex: 1,
           child: Container(
-            color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+            color: AppColors.accent.withValues(alpha: 0.1),
             padding: const EdgeInsets.all(40),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'MiNegocio POS',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppTheme.colorCeleste,
+                    color: AppColors.accent,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -309,7 +309,7 @@ Widget _buildActiveLicenseCard() {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.colorCeleste,
+                            color: AppColors.accent,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -624,7 +624,7 @@ Widget _buildActiveLicenseCard() {
                   Text(
                     'Bienvenido',
                     style: textStyles.headlineMedium?.copyWith(
-                      color: AppTheme.colorCeleste,
+                      color: AppColors.accent,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -656,7 +656,7 @@ Widget _buildActiveLicenseCard() {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: const BorderSide(color: AppTheme.colorCeleste, width: 2),
+                      borderSide: const BorderSide(color: AppColors.accent, width: 2),
                     ),
                   ),
                 ),
@@ -678,7 +678,7 @@ Widget _buildActiveLicenseCard() {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: const BorderSide(color: AppTheme.colorCeleste, width: 2),
+                      borderSide: const BorderSide(color: AppColors.accent, width: 2),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
@@ -700,7 +700,7 @@ Widget _buildActiveLicenseCard() {
                         Checkbox(
                           value: loginForm.rememberMe,
                           onChanged: (v) => ref.read(loginFormProvider.notifier).onRememberMeChanged(v ?? false),
-                          activeColor: AppTheme.colorCeleste,
+                          activeColor: AppColors.accent,
                         ),
                         Text('Recordarme', style: TextStyle(color: Colors.grey.shade600)),
                       ],
@@ -732,7 +732,7 @@ Widget _buildActiveLicenseCard() {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.colorMorado,
+                    backgroundColor: AppColors.accent,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

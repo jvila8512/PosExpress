@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:etecsa/core/security/license_service.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 
 const _secureStorage = FlutterSecureStorage();
 
@@ -155,7 +155,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.colorCeleste,
+      backgroundColor: AppColors.accent,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -177,7 +177,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.store_rounded,
-                      color: AppTheme.colorCeleste,
+                      color: AppColors.accent,
                       size: 60,
                     ),
                   ),
@@ -256,7 +256,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _activateLicense,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.colorCeleste,
+                          backgroundColor: AppColors.accent,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
