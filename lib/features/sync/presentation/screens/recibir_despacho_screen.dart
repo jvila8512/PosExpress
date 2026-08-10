@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/sync_service.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:etecsa/features/products/presentation/providers/products_provider.dart';
 import 'package:etecsa/features/products/presentation/providers/categories_provider.dart';
@@ -213,7 +213,7 @@ class _RecibirDespachoScreenState extends ConsumerState<RecibirDespachoScreen> {
                       const SizedBox(height: 24),
                       FloatingActionButton.extended(
                         onPressed: _pickFile,
-                        backgroundColor: AppTheme.colorCeleste,
+                        backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
                         icon: const Icon(Icons.file_open),
                         label: const Text('IMPORTAR JSON'),
@@ -228,7 +228,7 @@ class _RecibirDespachoScreenState extends ConsumerState<RecibirDespachoScreen> {
                       padding: const EdgeInsets.all(16),
                       color: isReposicion
                           ? Colors.orange.withValues(alpha: 0.1)
-                          : AppTheme.colorCeleste.withValues(alpha: 0.1),
+                          : AppColors.accent.withValues(alpha: 0.1),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -236,7 +236,7 @@ class _RecibirDespachoScreenState extends ConsumerState<RecibirDespachoScreen> {
                             children: [
                               Icon(
                                 isReposicion ? Icons.add_circle : Icons.inventory_2,
-                                color: isReposicion ? Colors.orange : AppTheme.colorCeleste,
+                                color: isReposicion ? Colors.orange : AppColors.accent,
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
@@ -269,7 +269,7 @@ class _RecibirDespachoScreenState extends ConsumerState<RecibirDespachoScreen> {
                             title: Text(p['nombre'] as String),
                             subtitle: Text('Cantidad: ${p['cantidad']}'),
                             leading: CircleAvatar(
-                              backgroundColor: AppTheme.colorCeleste.withValues(alpha: 0.2),
+                              backgroundColor: AppColors.accent.withValues(alpha: 0.2),
                               child: Text('${p['cantidad']}', style: const TextStyle(fontSize: 12)),
                             ),
                           );
@@ -288,7 +288,7 @@ class _RecibirDespachoScreenState extends ConsumerState<RecibirDespachoScreen> {
                                 child: FloatingActionButton.extended(
                                   heroTag: 'apply',
                                   onPressed: _applyDespacho,
-                                  backgroundColor: isReposicion ? Colors.orange : AppTheme.colorMorado,
+                                  backgroundColor: isReposicion ? Colors.orange : AppColors.accent,
                                   foregroundColor: Colors.white,
                                   icon: Icon(isReposicion ? Icons.add_circle : Icons.check),
                                   label: Text(isReposicion ? 'APLICAR REPOSICIÓN' : 'APLICAR DESPACHO'),

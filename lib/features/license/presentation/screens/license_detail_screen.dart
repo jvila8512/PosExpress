@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -61,7 +61,7 @@ class _LicenseDetailScreenState extends ConsumerState<LicenseDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalle de Licencia'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -278,7 +278,7 @@ class _LicenseDetailScreenState extends ConsumerState<LicenseDetailScreen> {
                   'Plan',
                   _licencia.plan,
                   Icons.category,
-                  AppTheme.colorCeleste,
+                  AppColors.accent,
                 ),
               ),
               const SizedBox(width: 12),
@@ -333,7 +333,7 @@ class _LicenseDetailScreenState extends ConsumerState<LicenseDetailScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                    color: AppColors.accent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
@@ -341,7 +341,7 @@ class _LicenseDetailScreenState extends ConsumerState<LicenseDetailScreen> {
                       _cliente.nombre[0].toUpperCase(),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.colorCeleste,
+                        color: AppColors.accent,
                       ),
                     ),
                   ),

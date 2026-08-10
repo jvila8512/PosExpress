@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 
 class PlanPricingScreen extends ConsumerStatefulWidget {
@@ -54,7 +54,7 @@ class _PlanPricingScreenState extends ConsumerState<PlanPricingScreen> {
             right: 16,
             child: FloatingActionButton(
               onPressed: () => _showPlanDialog(),
-              backgroundColor: AppTheme.colorMorado,
+              backgroundColor: AppColors.accent,
               child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
@@ -65,7 +65,7 @@ class _PlanPricingScreenState extends ConsumerState<PlanPricingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Planes de Precios'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -81,7 +81,7 @@ class _PlanPricingScreenState extends ConsumerState<PlanPricingScreen> {
       body: body,
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showPlanDialog(),
-        backgroundColor: AppTheme.colorMorado,
+        backgroundColor: AppColors.accent,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -142,11 +142,11 @@ class _PlanPricingScreenState extends ConsumerState<PlanPricingScreen> {
         planIcon = Icons.sentiment_satisfied;
         break;
       case 'PRO':
-        planColor = AppTheme.colorCeleste;
+        planColor = AppColors.accent;
         planIcon = Icons.star;
         break;
       case 'NEGOCIO':
-        planColor = AppTheme.colorMorado;
+        planColor = AppColors.accent;
         planIcon = Icons.business;
         break;
       case 'MAX':

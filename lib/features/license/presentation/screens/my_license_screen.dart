@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/security/license_service.dart';
 
@@ -104,7 +104,7 @@ class _MyLicenseScreenState extends State<MyLicenseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mi Licencia'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -142,7 +142,7 @@ class _MyLicenseScreenState extends State<MyLicenseScreen> {
     final gradientColors = hasLicense
         ? (isExpired
             ? [Colors.red.shade700, Colors.red.shade500]
-            : [AppTheme.colorCeleste, AppTheme.colorCeleste.withValues(alpha: 0.8)])
+            : [AppColors.accent, AppColors.accent.withValues(alpha: 0.8)])
         : [Colors.grey.shade600, Colors.grey.shade400];
 
     return Container(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/license/presentation/screens/clientes_screen.dart';
 import 'package:etecsa/features/license/presentation/screens/plan_pricing_screen.dart';
@@ -141,7 +141,7 @@ class _LicensesDashboardScreenState extends State<LicensesDashboardScreen>
       drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
         title: Text(_getAppBarTitle()),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.menu),
@@ -209,7 +209,7 @@ class _LicensesDashboardScreenState extends State<LicensesDashboardScreen>
           setState(() => _currentIndex = index);
         },
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppTheme.colorMorado,
+        selectedItemColor: AppColors.accent,
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
@@ -295,7 +295,7 @@ class _LicensesDashboardScreenState extends State<LicensesDashboardScreen>
                 icon: Icons.attach_money,
                 value: _formatCurrency(_ingresosTotales),
                 label: 'Ingresos',
-                color: AppTheme.colorMorado,
+                color: AppColors.accent,
               ),
             ),
             const SizedBox(width: 12),
@@ -304,7 +304,7 @@ class _LicensesDashboardScreenState extends State<LicensesDashboardScreen>
                 icon: Icons.people,
                 value: _clientesCount.toString(),
                 label: 'Clientes',
-                color: AppTheme.colorCeleste,
+                color: AppColors.accent,
               ),
             ),
           ],
@@ -632,7 +632,7 @@ class _LicensesDashboardScreenState extends State<LicensesDashboardScreen>
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                color: AppColors.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
@@ -643,7 +643,7 @@ class _LicensesDashboardScreenState extends State<LicensesDashboardScreen>
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.colorCeleste,
+                    color: AppColors.accent,
                   ),
                 ),
               ),

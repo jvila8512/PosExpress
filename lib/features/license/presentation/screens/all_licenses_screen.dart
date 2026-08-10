@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
@@ -893,7 +893,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
                       child: _buildStatItem(
                         label: 'Total',
                         value: _totalCount.toString(),
-                        color: AppTheme.colorCeleste,
+                        color: AppColors.accent,
                       ),
                     ),
                     Expanded(
@@ -1005,7 +1005,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
             right: 16,
             child: FloatingActionButton(
               onPressed: _showCrearLicenciaDialog,
-              backgroundColor: AppTheme.colorCeleste,
+              backgroundColor: AppColors.accent,
               child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
@@ -1016,7 +1016,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Todas las Licencias'),
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -1026,7 +1026,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
       body: body,
       floatingActionButton: FloatingActionButton(
         onPressed: _showCrearLicenciaDialog,
-        backgroundColor: AppTheme.colorCeleste,
+        backgroundColor: AppColors.accent,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -1094,7 +1094,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                            color: AppColors.accent.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -1102,7 +1102,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.colorCeleste,
+                              color: AppColors.accent,
                             ),
                           ),
                         ),
@@ -1181,8 +1181,8 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
         setState(() => _filterEstado = selected ? value : '');
         _loadData();
       },
-      selectedColor: AppTheme.colorCeleste.withValues(alpha: 0.2),
-      checkmarkColor: AppTheme.colorCeleste,
+      selectedColor: AppColors.accent.withValues(alpha: 0.2),
+      checkmarkColor: AppColors.accent,
     );
   }
 
@@ -1287,7 +1287,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                color: AppColors.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
@@ -1298,7 +1298,7 @@ Future<List<LicenciasClienteData>> _loadPage(int page) async {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.colorCeleste,
+                    color: AppColors.accent,
                   ),
                 ),
               ),

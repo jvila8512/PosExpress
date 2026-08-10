@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/export_service.dart';
 import 'package:etecsa/features/shared/widgets/export_options_dialog.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:intl/intl.dart';
 
@@ -180,7 +180,7 @@ class _HistorialDespachosScreenState extends State<HistorialDespachosScreen> {
                         Text('Despacho para ${despacho.vendedoraNombre}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         Text(DateFormat('dd/MM/yyyy HH:mm').format(despacho.fechaEnvio), style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                         const SizedBox(height: 4),
-                        Text('${despacho.productosCount} productos', style: const TextStyle(fontSize: 13, color: AppTheme.colorCeleste)),
+                        Text('${despacho.productosCount} productos', style: const TextStyle(fontSize: 13, color: AppColors.accent)),
                       ],
                     ),
                   ),
@@ -248,7 +248,7 @@ class _HistorialDespachosScreenState extends State<HistorialDespachosScreen> {
         leading: IconButton(icon: const Icon(Icons.menu), onPressed: () => _scaffoldKey.currentState?.openDrawer()),
         actions: [
           IconButton(
-            icon: Icon(Icons.date_range, color: filtered ? AppTheme.colorCeleste : null),
+            icon: Icon(Icons.date_range, color: filtered ? AppColors.accent : null),
             onPressed: _pickDateRange,
             tooltip: 'Filtrar por fecha',
           ),
@@ -273,15 +273,15 @@ class _HistorialDespachosScreenState extends State<HistorialDespachosScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    color: AppTheme.colorCeleste.withValues(alpha: 0.08),
+                    color: AppColors.accent.withValues(alpha: 0.08),
                     child: Row(
                       children: [
-                        Icon(Icons.filter_list, size: 16, color: AppTheme.colorCeleste),
+                        Icon(Icons.filter_list, size: 16, color: AppColors.accent),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             '${DateFormat('dd/MM/yy').format(_fromDate!)} - ${DateFormat('dd/MM/yy').format(_toDate!)}',
-                            style: TextStyle(fontSize: 13, color: AppTheme.colorCeleste, fontWeight: FontWeight.w600),
+                            style: TextStyle(fontSize: 13, color: AppColors.accent, fontWeight: FontWeight.w600),
                           ),
                         ),
                         TextButton.icon(
@@ -348,10 +348,10 @@ class _HistorialDespachosScreenState extends State<HistorialDespachosScreen> {
                                     leading: CircleAvatar(
                                       backgroundColor: esReposicion
                                           ? Colors.orange.withValues(alpha: 0.1)
-                                          : AppTheme.colorCeleste.withValues(alpha: 0.1),
+                                          : AppColors.accent.withValues(alpha: 0.1),
                                       child: Icon(
                                         esReposicion ? Icons.add_circle : Icons.send,
-                                        color: esReposicion ? Colors.orange : AppTheme.colorCeleste,
+                                        color: esReposicion ? Colors.orange : AppColors.accent,
                                         size: 20,
                                       ),
                                     ),
@@ -361,16 +361,16 @@ class _HistorialDespachosScreenState extends State<HistorialDespachosScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                           decoration: BoxDecoration(
-                                            color: esReposicion ? Colors.orange.shade50 : AppTheme.colorCeleste.withValues(alpha: 0.1),
+                                            color: esReposicion ? Colors.orange.shade50 : AppColors.accent.withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: esReposicion ? Colors.orange.shade200 : AppTheme.colorCeleste.withValues(alpha: 0.3)),
+                                            border: Border.all(color: esReposicion ? Colors.orange.shade200 : AppColors.accent.withValues(alpha: 0.3)),
                                           ),
                                           child: Text(
                                             esReposicion ? 'Reposición' : 'Despacho',
                                             style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.w600,
-                                              color: esReposicion ? Colors.orange.shade700 : AppTheme.colorCeleste,
+                                              color: esReposicion ? Colors.orange.shade700 : AppColors.accent,
                                             ),
                                           ),
                                         ),
@@ -381,7 +381,7 @@ class _HistorialDespachosScreenState extends State<HistorialDespachosScreen> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
-                                        Text('${d.productosCount} prod.', style: const TextStyle(fontWeight: FontWeight.w600, color: AppTheme.colorCeleste)),
+                                        Text('${d.productosCount} prod.', style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.accent)),
                                       ],
                                     ),
                                     onTap: () => _showDetail(d),

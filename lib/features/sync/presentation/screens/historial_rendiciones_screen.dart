@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/export_service.dart';
 import 'package:etecsa/features/shared/widgets/export_options_dialog.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:intl/intl.dart';
 
@@ -277,9 +277,9 @@ class _HistorialRendicionesScreenState extends State<HistorialRendicionesScreen>
                   padding: const EdgeInsets.only(top: 8),
                   child: Row(
                     children: [
-                      const Icon(Icons.point_of_sale, size: 16, color: AppTheme.colorMorado),
+                      const Icon(Icons.point_of_sale, size: 16, color: AppColors.accent),
                       const SizedBox(width: 4),
-                      Text('Caja: ${rendicion.sessionId}', style: const TextStyle(fontSize: 11, color: AppTheme.colorMorado)),
+                      Text('Caja: ${rendicion.sessionId}', style: const TextStyle(fontSize: 11, color: AppColors.accent)),
                     ],
                   ),
                 ),
@@ -383,7 +383,7 @@ class _HistorialRendicionesScreenState extends State<HistorialRendicionesScreen>
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
         child: Column(
           children: [
-            Icon(icon, size: 18, color: AppTheme.colorCeleste),
+            Icon(icon, size: 18, color: AppColors.accent),
             Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
           ],
@@ -404,7 +404,7 @@ class _HistorialRendicionesScreenState extends State<HistorialRendicionesScreen>
         leading: IconButton(icon: const Icon(Icons.menu), onPressed: () => _scaffoldKey.currentState?.openDrawer()),
         actions: [
           IconButton(
-            icon: Icon(Icons.date_range, color: filtered ? AppTheme.colorCeleste : null),
+            icon: Icon(Icons.date_range, color: filtered ? AppColors.accent : null),
             onPressed: _pickDateRange,
             tooltip: 'Filtrar por fecha',
           ),
@@ -429,15 +429,15 @@ class _HistorialRendicionesScreenState extends State<HistorialRendicionesScreen>
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    color: AppTheme.colorCeleste.withValues(alpha: 0.08),
+                    color: AppColors.accent.withValues(alpha: 0.08),
                     child: Row(
                       children: [
-                        Icon(Icons.filter_list, size: 16, color: AppTheme.colorCeleste),
+                        Icon(Icons.filter_list, size: 16, color: AppColors.accent),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             '${DateFormat('dd/MM/yy').format(_fromDate!)} - ${DateFormat('dd/MM/yy').format(_toDate!)}',
-                            style: TextStyle(fontSize: 13, color: AppTheme.colorCeleste, fontWeight: FontWeight.w600),
+                            style: TextStyle(fontSize: 13, color: AppColors.accent, fontWeight: FontWeight.w600),
                           ),
                         ),
                         TextButton.icon(
@@ -506,8 +506,8 @@ class _HistorialRendicionesScreenState extends State<HistorialRendicionesScreen>
               child: Row(
                 children: [
                   CircleAvatar(
-                    backgroundColor: AppTheme.colorMorado.withValues(alpha: 0.1),
-                    child: const Icon(Icons.assignment_return, color: AppTheme.colorMorado, size: 20),
+                    backgroundColor: AppColors.accent.withValues(alpha: 0.1),
+                    child: const Icon(Icons.assignment_return, color: AppColors.accent, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -530,7 +530,7 @@ class _HistorialRendicionesScreenState extends State<HistorialRendicionesScreen>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('\$${r.totalGeneral.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.colorMorado, fontSize: 14)),
+                      Text('\$${r.totalGeneral.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accent, fontSize: 14)),
                       const SizedBox(height: 2),
                       Text(
                         'E: \$${r.totalEfectivo.toStringAsFixed(0)}  T: \$${r.totalTransferencia.toStringAsFixed(0)}',

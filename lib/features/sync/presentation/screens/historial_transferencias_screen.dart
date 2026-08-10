@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:etecsa/core/services/export_service.dart';
 import 'package:etecsa/features/shared/widgets/export_options_dialog.dart';
@@ -298,7 +298,7 @@ class _HistorialTransferenciasScreenState
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppTheme.colorCeleste),
+          Icon(icon, size: 18, color: AppColors.accent),
           const SizedBox(width: 8),
           Text(label,
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
@@ -330,7 +330,7 @@ class _HistorialTransferenciasScreenState
           // Filtro por fecha
           IconButton(
             icon: Icon(Icons.date_range,
-                color: filtered ? AppTheme.colorCeleste : null),
+                color: filtered ? AppColors.accent : null),
             onPressed: _pickDateRange,
             tooltip: 'Filtrar por fecha',
           ),
@@ -352,15 +352,15 @@ class _HistorialTransferenciasScreenState
                     width: double.infinity,
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    color: AppTheme.colorCeleste.withValues(alpha: 0.08),
+                    color: AppColors.accent.withValues(alpha: 0.08),
                     child: Row(
                       children: [
-                        Icon(Icons.filter_list, size: 16, color: AppTheme.colorCeleste),
+                        Icon(Icons.filter_list, size: 16, color: AppColors.accent),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             '${DateFormat('dd/MM/yy').format(_fromDate!)} - ${DateFormat('dd/MM/yy').format(_toDate!)}',
-                            style: TextStyle(fontSize: 13, color: AppTheme.colorCeleste, fontWeight: FontWeight.w600),
+                            style: TextStyle(fontSize: 13, color: AppColors.accent, fontWeight: FontWeight.w600),
                           ),
                         ),
                         TextButton.icon(
@@ -463,7 +463,7 @@ class _HistorialTransferenciasScreenState
                                                 isExpanded
                                                     ? Icons.expand_less
                                                     : Icons.expand_more,
-                                                color: AppTheme.colorCeleste,
+                                                color: AppColors.accent,
                                               ),
                                               const SizedBox(width: 8),
                                               Expanded(

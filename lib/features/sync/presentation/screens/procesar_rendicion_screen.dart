@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:etecsa/core/services/sync_service.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -62,7 +62,7 @@ class _ProcesarRendicionScreenState extends State<ProcesarRendicionScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.colorMorado),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
             child: const Text('PROCESAR'),
           ),
         ],
@@ -183,7 +183,7 @@ class _ProcesarRendicionScreenState extends State<ProcesarRendicionScreen> {
                   const SizedBox(height: 24),
                   FloatingActionButton.extended(
                     onPressed: _pickFile,
-                    backgroundColor: AppTheme.colorCeleste,
+                    backgroundColor: AppColors.accent,
                     foregroundColor: Colors.white,
                     icon: const Icon(Icons.file_open),
                     label: const Text('IMPORTAR JSON'),
@@ -197,7 +197,7 @@ class _ProcesarRendicionScreenState extends State<ProcesarRendicionScreen> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
-                  color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                  color: AppColors.accent.withValues(alpha: 0.1),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -376,7 +376,7 @@ class _ProcesarRendicionScreenState extends State<ProcesarRendicionScreen> {
                       padding: const EdgeInsets.all(16),
                       child: FloatingActionButton.extended(
                         onPressed: _applyRendicion,
-                        backgroundColor: AppTheme.colorMorado,
+                        backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
                         icon: const Icon(Icons.check),
                         label: const Text('PROCESAR RENDICIÓN'),
@@ -416,7 +416,7 @@ class _ProcesarRendicionScreenState extends State<ProcesarRendicionScreen> {
                                 _applied = false;
                               });
                             },
-                            backgroundColor: AppTheme.colorCeleste,
+                            backgroundColor: AppColors.accent,
                             foregroundColor: Colors.white,
                             icon: const Icon(Icons.file_open),
                             label: const Text('IMPORTAR OTRA RENDICIÓN'),
@@ -452,7 +452,7 @@ class _ProcesarRendicionScreenState extends State<ProcesarRendicionScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 20, color: AppTheme.colorCeleste),
+            Icon(icon, size: 20, color: AppColors.accent),
             const SizedBox(height: 4),
             Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
@@ -487,11 +487,11 @@ class _ProcesarRendicionScreenState extends State<ProcesarRendicionScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppTheme.colorMorado.withValues(alpha: 0.12),
+                color: AppColors.accent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
-                child: Text('$cantidad', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.colorMorado)),
+                child: Text('$cantidad', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accent)),
               ),
             ),
             const SizedBox(width: 12),

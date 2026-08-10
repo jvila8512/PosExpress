@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:intl/intl.dart';
 
@@ -182,7 +182,7 @@ class _MisRendicionesScreenState extends State<MisRendicionesScreen> {
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
         child: Column(
           children: [
-            Icon(icon, size: 18, color: AppTheme.colorCeleste),
+            Icon(icon, size: 18, color: AppColors.accent),
             Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
           ],
@@ -223,12 +223,12 @@ class _MisRendicionesScreenState extends State<MisRendicionesScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: AppTheme.colorMorado.withValues(alpha: 0.1),
-                            child: const Icon(Icons.assignment, color: AppTheme.colorMorado, size: 20),
+                            backgroundColor: AppColors.accent.withValues(alpha: 0.1),
+                            child: const Icon(Icons.assignment, color: AppColors.accent, size: 20),
                           ),
                           title: Text('Rendición ${DateFormat('dd/MM/yy').format(r.fechaRendicion)}', style: const TextStyle(fontWeight: FontWeight.w600)),
                           subtitle: Text(DateFormat('dd/MM/yyyy HH:mm').format(r.fechaRendicion)),
-                          trailing: Text('\$${r.totalGeneral.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.colorMorado)),
+                          trailing: Text('\$${r.totalGeneral.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accent)),
                           onTap: () => _showDetail(r),
                         ),
                       );

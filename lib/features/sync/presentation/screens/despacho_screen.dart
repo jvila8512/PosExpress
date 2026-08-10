@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/sync_service.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:etecsa/features/shared/widgets/export_options_dialog.dart';
 import 'package:etecsa/features/shared/services/KeyValueStorageService.dart';
@@ -235,7 +235,7 @@ class _DespachoScreenState extends ConsumerState<DespachoScreen> {
                     Checkbox(
                       value: confirmed,
                       onChanged: (v) => setDialogState(() => confirmed = v ?? false),
-                      activeColor: AppTheme.colorMorado,
+                      activeColor: AppColors.accent,
                     ),
                     Expanded(
                       child: GestureDetector(
@@ -259,7 +259,7 @@ class _DespachoScreenState extends ConsumerState<DespachoScreen> {
             ElevatedButton(
               onPressed: confirmed ? () => Navigator.pop(ctx) : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: confirmed ? AppTheme.colorMorado : Colors.grey,
+                backgroundColor: confirmed ? AppColors.accent : Colors.grey,
               ),
               child: const Text('ENVIAR REPOSICIÓN', style: TextStyle(color: Colors.white)),
             ),
@@ -416,7 +416,7 @@ class _DespachoScreenState extends ConsumerState<DespachoScreen> {
                     Navigator.pop(ctx);
                     _resetForm();
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.colorMorado),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
                   child: const Text('Nuevo despacho', style: TextStyle(color: Colors.white)),
                 ),
               ],
@@ -478,7 +478,7 @@ class _DespachoScreenState extends ConsumerState<DespachoScreen> {
                     title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                     subtitle: Text('Stock: ${_fmtQty(_stocks[product.id] ?? 0)}'),
                     trailing: IconButton(
-                      icon: const Icon(Icons.restore, color: AppTheme.colorCeleste),
+                      icon: const Icon(Icons.restore, color: AppColors.accent),
                       tooltip: 'Restaurar',
                       onPressed: () {
                         _restoreProduct(product.id);
@@ -579,7 +579,7 @@ class _DespachoScreenState extends ConsumerState<DespachoScreen> {
                         children: [
                           Text(
                             _isReposicion ? 'Reposic.' : 'Despacho',
-                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _isReposicion ? Colors.orange : AppTheme.colorCeleste),
+                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _isReposicion ? Colors.orange : AppColors.accent),
                           ),
                           Switch(
                             value: _isReposicion,
@@ -749,7 +749,7 @@ class _DespachoScreenState extends ConsumerState<DespachoScreen> {
                                         borderRadius: BorderRadius.circular(6),
                                         borderSide: (_selectedQtys[product.id] ?? 0) > stock
                                             ? const BorderSide(color: Colors.red, width: 2)
-                                            : const BorderSide(color: AppTheme.colorCeleste),
+                                            : const BorderSide(color: AppColors.accent),
                                       ),
                                     ),
                                     onChanged: (val) {
@@ -802,8 +802,8 @@ class _DespachoScreenState extends ConsumerState<DespachoScreen> {
                           icon: const Icon(Icons.save_outlined, size: 16),
                           label: const Text('BORRADOR', style: TextStyle(fontSize: 11)),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppTheme.colorCeleste,
-                            side: const BorderSide(color: AppTheme.colorCeleste),
+                            foregroundColor: AppColors.accent,
+                            side: const BorderSide(color: AppColors.accent),
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           ),
@@ -818,7 +818,7 @@ class _DespachoScreenState extends ConsumerState<DespachoScreen> {
                               ? Colors.grey
                               : _isReposicion
                                   ? Colors.orange
-                                  : AppTheme.colorMorado,
+                                  : AppColors.accent,
                           foregroundColor: Colors.white,
                           icon: _exporting
                               ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/security/license_service.dart';
 
 class LicenseExpiredScreen extends StatelessWidget {
@@ -328,12 +328,12 @@ class LicenseExpiredScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                            color: AppColors.accent.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.person,
-                            color: AppTheme.colorCeleste,
+                            color: AppColors.accent,
                           ),
                         ),
                         const SizedBox(width: 16),

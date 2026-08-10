@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:intl/intl.dart';
 
@@ -87,7 +87,7 @@ class _MisDespachosScreenState extends State<MisDespachosScreen> {
                   ),
                   Text(DateFormat('dd/MM/yyyy HH:mm').format(despacho.fechaRecibido), style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                   const SizedBox(height: 4),
-                  Text('${despacho.productosCount} productos', style: const TextStyle(fontSize: 13, color: AppTheme.colorCeleste)),
+                  Text('${despacho.productosCount} productos', style: const TextStyle(fontSize: 13, color: AppColors.accent)),
                 ],
               ),
             ),
@@ -147,10 +147,10 @@ class _MisDespachosScreenState extends State<MisDespachosScreen> {
                           leading: CircleAvatar(
                             backgroundColor: esReposicion
                                 ? Colors.orange.withValues(alpha: 0.1)
-                                : AppTheme.colorCeleste.withValues(alpha: 0.1),
+                                : AppColors.accent.withValues(alpha: 0.1),
                             child: Icon(
                               esReposicion ? Icons.add_circle : Icons.inventory_2_outlined,
-                              color: esReposicion ? Colors.orange : AppTheme.colorCeleste,
+                              color: esReposicion ? Colors.orange : AppColors.accent,
                               size: 20,
                             ),
                           ),
@@ -165,16 +165,16 @@ class _MisDespachosScreenState extends State<MisDespachosScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: esReposicion ? Colors.orange.shade50 : AppTheme.colorCeleste.withValues(alpha: 0.1),
+                                  color: esReposicion ? Colors.orange.shade50 : AppColors.accent.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: esReposicion ? Colors.orange.shade200 : AppTheme.colorCeleste.withValues(alpha: 0.3)),
+                                  border: Border.all(color: esReposicion ? Colors.orange.shade200 : AppColors.accent.withValues(alpha: 0.3)),
                                 ),
                                 child: Text(
                                   esReposicion ? 'Reposición' : 'Despacho',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
-                                    color: esReposicion ? Colors.orange.shade700 : AppTheme.colorCeleste,
+                                    color: esReposicion ? Colors.orange.shade700 : AppColors.accent,
                                   ),
                                 ),
                               ),
@@ -185,7 +185,7 @@ class _MisDespachosScreenState extends State<MisDespachosScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text('${d.productosCount} prod.', style: const TextStyle(fontWeight: FontWeight.w600, color: AppTheme.colorCeleste)),
+                              Text('${d.productosCount} prod.', style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.accent)),
                               if (d.status == 'aplicado')
                                 const Icon(Icons.check_circle, size: 16, color: Colors.green)
                               else

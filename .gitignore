@@ -31,6 +31,8 @@ C?*
 !lib/features/categories/
 !lib/features/products/presentation/screens/categories_screen.dart
 !lib/features/products/presentation/screens/category_form_screen.dart
+!lib/features/license/presentation/screens/cliente_detail_screen.dart
+!lib/features/license/presentation/screens/clientes_screen.dart
 !test/core/
 
 # Google Fonts cache

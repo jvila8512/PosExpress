@@ -3,7 +3,7 @@ import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/export_service.dart';
 import 'package:etecsa/features/shared/widgets/export_options_dialog.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 
 class HistorialVentasScreen extends StatefulWidget {
@@ -221,7 +221,7 @@ class _HistorialVentasScreenState extends State<HistorialVentasScreen> {
         actions: [
           // Filtro por fecha
           IconButton(
-            icon: Icon(Icons.date_range, color: filtered ? AppTheme.colorCeleste : null),
+            icon: Icon(Icons.date_range, color: filtered ? AppColors.accent : null),
             onPressed: _pickDateRange,
             tooltip: 'Filtrar por fecha',
           ),
@@ -246,15 +246,15 @@ class _HistorialVentasScreenState extends State<HistorialVentasScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    color: AppTheme.colorCeleste.withValues(alpha: 0.08),
+                    color: AppColors.accent.withValues(alpha: 0.08),
                     child: Row(
                       children: [
-                        Icon(Icons.filter_list, size: 16, color: AppTheme.colorCeleste),
+                        Icon(Icons.filter_list, size: 16, color: AppColors.accent),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             '${DateFormat('dd/MM/yy').format(_fromDate!)} - ${DateFormat('dd/MM/yy').format(_toDate!)}',
-                            style: TextStyle(fontSize: 13, color: AppTheme.colorCeleste, fontWeight: FontWeight.w600),
+                            style: TextStyle(fontSize: 13, color: AppColors.accent, fontWeight: FontWeight.w600),
                           ),
                         ),
                         TextButton.icon(
