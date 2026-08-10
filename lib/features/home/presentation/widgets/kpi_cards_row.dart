@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 
 class KPICardsRow extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -87,7 +87,7 @@ class KPICardsRow extends StatelessWidget {
                       ? 'Margen: ${((todayProfit / todaySales) * 100).toStringAsFixed(1)}%'
                       : 'Sin ventas',
                   icon: Icons.trending_up,
-                  color: AppTheme.colorMorado,
+                  color: AppColors.accent,
                   tooltip: 'Dinero ganado después de descontar el costo de los productos',
                 ),
               ),

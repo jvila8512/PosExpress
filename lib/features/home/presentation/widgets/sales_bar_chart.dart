@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 
 class SalesBarChart extends StatelessWidget {
   final Map<int, double> dailySales;
@@ -70,7 +70,7 @@ class SalesBarChart extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                color: AppColors.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: FittedBox(
@@ -79,7 +79,7 @@ class SalesBarChart extends StatelessWidget {
                   'Promedio: \$${average.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppTheme.colorCeleste,
+                    color: AppColors.accent,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

@@ -32,6 +32,7 @@ import 'package:etecsa/features/clients/presentation/screens/client_management_s
 import 'package:etecsa/features/contacts/presentation/screens/trusted_contacts_screen.dart';
 import 'package:etecsa/features/daily_close/presentation/screens/daily_close_screen.dart';
 import 'package:etecsa/features/exports/presentation/screens/export_import_screen.dart';
+import 'package:etecsa/features/workers/presentation/screens/workers_screen.dart';
 import 'package:etecsa/core/database/app_database.dart';
 
 const _secureStorage = FlutterSecureStorage();
@@ -44,6 +45,22 @@ Future<bool> _isLoggedIn() async {
 Future<bool> _isSuperAdmin() async {
   final role = await _secureStorage.read(key: 'user_role');
   return role == 'super_admin';
+}
+
+/// Guard de ruta `/workers` (navegación directa): puro y testeable.
+/// Devuelve el redirect a aplicar o null si se permite navegar.
+///
+/// Solo `admin` y `super_admin` pueden entrar; los demás roles van a su home
+/// (`/`); sin sesión a login (el login decide registro si no hay usuarios).
+String? workersRedirectDecision({
+  required bool loggedIn,
+  required String role,
+  required String currentPath,
+}) {
+  if (currentPath != '/workers') return null;
+  if (!loggedIn) return '/login';
+  final isAdminOrSuper = role == 'admin' || role == 'super_admin';
+  return isAdminOrSuper ? null : '/';
 }
 
 Future<bool> _isFirstTime() async {
@@ -206,6 +223,12 @@ final appRouter = GoRouter(
       builder: (context, state) => const DeliveryListScreen(),
     ),
 
+    // ── Workers (admin/super_admin) ─────────────────────────────
+    GoRoute(
+      path: '/workers',
+      builder: (context, state) => const WorkersScreen(),
+    ),
+
     // ── Clients ──────────────────────────────────────────────────
     GoRoute(
       path: '/clients',
@@ -263,6 +286,17 @@ final appRouter = GoRouter(
       if (!isSuperAdmin) {
         return '/';
       }
+    }
+
+    // Verificar acceso a /workers (solo admin y super_admin)
+    final role = await _secureStorage.read(key: 'user_role') ?? '';
+    final workersRedirect = workersRedirectDecision(
+      loggedIn: loggedIn,
+      role: role,
+      currentPath: currentPath,
+    );
+    if (workersRedirect != null) {
+      return workersRedirect;
     }
 
     // Primera vez sin usuarios -> Register

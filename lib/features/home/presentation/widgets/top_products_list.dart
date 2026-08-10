@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
+import 'package:etecsa/config/theme/app_colors.dart';
 
 class TopProductsList extends StatelessWidget {
   final List<Map<String, dynamic>> products;
@@ -103,7 +103,7 @@ class TopProductsList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                  color: AppColors.accent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -119,7 +119,7 @@ class TopProductsList extends StatelessWidget {
                       'Más vendidos hoy',
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppTheme.colorCeleste,
+                        color: AppColors.accent,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -265,7 +265,7 @@ class TopProductsList extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.colorCeleste.withValues(alpha: 0.1),
+                color: AppColors.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -274,7 +274,7 @@ class TopProductsList extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.colorCeleste,
+                  color: AppColors.accent,
                 ),
               ),
             ),

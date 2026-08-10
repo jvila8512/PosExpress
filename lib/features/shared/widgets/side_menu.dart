@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:etecsa/config/theme/app_colors.dart';
-import 'package:etecsa/config/theme/hamburguesa_theme.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -67,6 +66,8 @@ class _SideMenuState extends State<SideMenu> {
   // ── ADMIN menu ─────────────────────────────────────────────────
   final List<AppMenuItem> _adminMenuItems = [
     const AppMenuItem(icon: Icons.home, label: 'Inicio', route: '/'),
+    const AppMenuItem(icon: Icons.add_circle_outline, label: 'Nuevo Pedido', route: '/orders/new'),
+    const AppMenuItem(icon: Icons.people_alt, label: 'Usuarios', route: '/workers'),
     const AppMenuItem(icon: Icons.inventory_2_outlined, label: 'Productos', route: '/products'),
     const AppMenuItem(icon: Icons.category_outlined, label: 'Categorías', route: '/categories'),
     const AppMenuItem(icon: Icons.account_balance, label: 'Cierre del Día', route: '/daily-close'),
@@ -82,6 +83,8 @@ class _SideMenuState extends State<SideMenu> {
   // ── SUPER ADMIN menu (extends admin + licenses) ────────────────
   final List<AppMenuItem> _superAdminMenuItems = [
     const AppMenuItem(icon: Icons.home, label: 'Inicio', route: '/'),
+    const AppMenuItem(icon: Icons.add_circle_outline, label: 'Nuevo Pedido', route: '/orders/new'),
+    const AppMenuItem(icon: Icons.people_alt, label: 'Usuarios', route: '/workers'),
     const AppMenuItem(icon: Icons.inventory_2_outlined, label: 'Productos', route: '/products'),
     const AppMenuItem(icon: Icons.category_outlined, label: 'Categorías', route: '/categories'),
     const AppMenuItem(icon: Icons.account_balance, label: 'Cierre del Día', route: '/daily-close'),

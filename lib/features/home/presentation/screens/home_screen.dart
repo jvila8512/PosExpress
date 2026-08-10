@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:etecsa/config/theme/app_theme.dart';
 import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:etecsa/data/repositories/home_repository.dart';
@@ -82,6 +81,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = isDark ? AppColors.darkTextPrimary : Colors.white;
+    final themeColors = AppColors.forBrightness(Theme.of(context).brightness);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -97,7 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               expandedHeight: 120,
               floating: false,
               pinned: true,
-              backgroundColor: AppTheme.colorCeleste,
+              backgroundColor: AppColors.accent,
               leading: IconButton(
                 icon: const Icon(Icons.menu, color: Colors.white),
                 onPressed: () => _scaffoldKey.currentState?.openDrawer(),
@@ -117,9 +117,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AppTheme.colorCeleste,
-                        AppTheme.colorCeleste.withValues(alpha: 0.8),
-                        AppTheme.colorMorado.withValues(alpha: 0.6),
+                        AppColors.accent,
+                        AppColors.accent.withValues(alpha: 0.8),
+                        themeColors.warning.withValues(alpha: 0.7),
                       ],
                     ),
                   ),
@@ -154,7 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Padding(
                         padding: EdgeInsets.all(50),
                         child: CircularProgressIndicator(
-                          color: AppTheme.colorCeleste,
+                          color: AppColors.accent,
                         ),
                       ),
                     ),
@@ -229,7 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _buildActionButton(
             icon: Icons.add_circle_outline,
             label: 'Nuevo Pedido',
-            color: AppTheme.colorCeleste,
+            color: AppColors.accent,
             onTap: () => context.go('/orders/new'),
           ),
           const SizedBox(height: 12),
@@ -243,7 +243,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _buildActionButton(
             icon: Icons.history,
             label: 'Historial de Pedidos',
-            color: AppTheme.colorMorado,
+            color: AppColors.accent,
             onTap: () => context.go('/orders/history'),
           ),
           const SizedBox(height: 24),
@@ -255,7 +255,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 'Pedidos Hoy',
                 '${todayOrders}',
                 Icons.receipt_long,
-                AppTheme.colorCeleste,
+                AppColors.accent,
               ),
               const SizedBox(width: 12),
               _buildStatCard(
@@ -440,7 +440,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _buildActionButton(
             icon: Icons.add_circle_outline,
             label: 'Nuevo Pedido Mesa',
-            color: AppTheme.colorCeleste,
+            color: AppColors.accent,
             onTap: () => context.go('/orders/new'),
           ),
           const SizedBox(height: 24),
@@ -451,7 +451,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 'Mesas activas',
                 '—',
                 Icons.table_restaurant,
-                AppTheme.colorCeleste,
+                AppColors.accent,
               ),
               const SizedBox(width: 12),
               _buildStatCard(
@@ -490,11 +490,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(height: 16),
 
+        // Nuevo Pedido shortcut (admin)
+        _buildActionButton(
+          icon: Icons.add_circle_outline,
+          label: 'Nuevo Pedido',
+          color: AppColors.accent,
+          onTap: () => context.go('/orders/new'),
+        ),
+        const SizedBox(height: 12),
+
         // Daily Close shortcut
         _buildActionButton(
           icon: Icons.account_balance,
           label: 'Cierre del Día',
-          color: AppTheme.colorMorado,
+          color: AppColors.accent,
           onTap: () => context.go('/daily-close'),
         ),
         const SizedBox(height: 20),
@@ -532,7 +541,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _buildActionButton(
           icon: Icons.file_upload,
           label: 'Exportar/Importar (JSON)',
-          color: AppTheme.colorCeleste,
+          color: AppColors.accent,
           onTap: () => context.go('/exports'),
         ),
 
@@ -556,8 +565,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.colorCeleste,
-            AppTheme.colorCeleste.withValues(alpha: 0.8),
+            AppColors.accent,
+            AppColors.accent.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
@@ -710,7 +719,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           child: Row(
             children: [
-              Icon(icon, size: 20, color: AppTheme.colorCeleste),
+              Icon(icon, size: 20, color: AppColors.accent),
               const SizedBox(width: 12),
               Text(
                 label,
@@ -893,7 +902,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: _buildQuickButton(
                 'Gastos',
                 Icons.receipt_long_outlined,
-                AppTheme.colorMorado,
+                AppColors.accent,
                 () => context.go('/expenses'),
               ),
             ),
