@@ -20,11 +20,19 @@ const _startupTimeout = Duration(seconds: 10);
 /// cuando el arranque hizo timeout (para saber si vamos a register o login).
 const _fallbackUsersTimeout = Duration(seconds: 2);
 
+/// Timeout por paso de la decisión de ruta: si un await de la secuencia
+/// (users-query / license-read / license-validate / fingerprint /
+/// session-read) se cuelga, este fence lo corta y hace fail-open a
+/// login/register en vez de dejar el splash colgado para siempre.
+/// Constante nombrada (rollback flag), igual que el fence de arranque.
+const _routeStepTimeout = Duration(seconds: 10);
+
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({
     super.key,
     this.startupSteps,
     this.hasUsersOverride,
+    this.usersQueryOverride,
   });
 
   /// Steps de arranque alternativos (solo tests): reemplazan la cadena real.
@@ -35,6 +43,13 @@ class SplashScreen extends ConsumerStatefulWidget {
   /// verificar el destino del fail-open de forma determinista.
   @visibleForTesting
   final Future<bool> Function()? hasUsersOverride;
+
+  /// Consulta de usuarios de la decisión de ruta (solo tests): reemplaza la
+  /// llamada real a la DB en `_decideRoute`. Permite simular un paso colgado
+  /// (future que nunca completa) para verificar el fence de la secuencia de
+  /// ruta. Solo se consume `isEmpty` del resultado.
+  @visibleForTesting
+  final Future<List<Object>> Function()? usersQueryOverride;
 
   @override
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
@@ -72,19 +87,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   /// capturados; las side-effects (revocar licencia, tema por rol) se
   /// aplican después, fuera del fence, en [_applyDecision].
   List<StartupStep> _buildStartupSteps() => [
-        (name: 'db-init', run: () async {
-          final db = AppDatabase.instance;
-          await db.createDefaultAdmin();
-          await db.createDefaultJefe();
-          await db.initDefaultPlans();
-        }),
-        (name: 'backup-init', run: () async {
-          await DatabaseBackupService.instance.initAutoBackup();
-        }),
-        (name: 'exports-cleanup', run: () async {
-          ExportService.instance.weeklyCleanupExports();
-        }),
-      ];
+    (
+      name: 'db-init',
+      run: () async {
+        final db = AppDatabase.instance;
+        await db.createDefaultAdmin();
+        await db.createDefaultJefe();
+        await db.initDefaultPlans();
+      },
+    ),
+    (
+      name: 'backup-init',
+      run: () async {
+        await DatabaseBackupService.instance.initAutoBackup();
+      },
+    ),
+    (
+      name: 'exports-cleanup',
+      run: () async {
+        ExportService.instance.weeklyCleanupExports();
+      },
+    ),
+  ];
 
   Future<void> _decideRoute() async {
     try {
@@ -93,7 +117,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final db = AppDatabase.instance;
 
       // 1. Usuarios existentes
-      final users = await db.getAllUsers();
+      final users = await _boundedRouteStep(
+        'users-query',
+        widget.usersQueryOverride?.call() ?? db.getAllUsers(),
+      );
       if (!mounted) return;
       if (users.isEmpty) {
         debugPrint('[splash] Va a Registro (sin usuarios)');
@@ -102,7 +129,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
 
       // 2. Licencia activada en secure_storage
-      final activatedLicense = await LicenseService.getActivatedLicenseCode();
+      final activatedLicense = await _boundedRouteStep(
+        'license-read',
+        LicenseService.getActivatedLicenseCode(),
+      );
       if (!mounted) return;
       if (activatedLicense == null || activatedLicense.isEmpty) {
         debugPrint('[splash] Va a Login (sin licencia activada)');
@@ -111,31 +141,40 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
 
       // 3. Validación con protección anti-manipulación
-      final validationResult =
-          await LicenseService.validateLicenseWithTamperProtection(db);
+      final validationResult = await _boundedRouteStep(
+        'license-validate',
+        LicenseService.validateLicenseWithTamperProtection(db),
+      );
       if (!mounted) return;
 
       // 4. Licencia vencida -> pantalla dedicada
       if (validationResult.isExpired) {
         debugPrint('[splash] Va a LicenseExpiredScreen');
-        context.go('/license-expired', extra: {
-          'expiredDate': validationResult.expiredDate,
-          'daysElapsed': validationResult.daysElapsed,
-          'durationDays': validationResult.durationDays,
-        });
+        context.go(
+          '/license-expired',
+          extra: {
+            'expiredDate': validationResult.expiredDate,
+            'daysElapsed': validationResult.daysElapsed,
+            'durationDays': validationResult.durationDays,
+          },
+        );
         return;
       }
 
       // 5. Licencia inválida (otro error) -> login (desde ahí puede activar)
       if (!validationResult.isValid) {
-        debugPrint('[splash] Licencia inválida: ${validationResult.errorMessage}');
+        debugPrint(
+          '[splash] Licencia inválida: ${validationResult.errorMessage}',
+        );
         context.go('/login');
         return;
       }
 
-      // 6. Verificar vínculo Android ID (no-fatal, 3s máximo)
-      final deviceAndroidId =
-          await LicenseService.getDeviceFingerprintOrNull();
+      // 6. Verificar vínculo Android ID (no-fatal, 3s máximo interno)
+      final deviceAndroidId = await _boundedRouteStep(
+        'fingerprint',
+        LicenseService.getDeviceFingerprintOrNull(),
+      );
       if (!mounted) return;
 
       if (deviceAndroidId != null) {
@@ -150,14 +189,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               '$deviceIdFromLicense, dispositivo actual: $deviceAndroidId',
             );
             // Revocar licencia — fue generada para otro dispositivo
-            await _secureStorage.delete(key: 'activated_license');
-            await _secureStorage.delete(key: 'license_key');
+            await _boundedRouteStep('license-revoke', () async {
+              await _secureStorage.delete(key: 'activated_license');
+              await _secureStorage.delete(key: 'license_key');
+            }());
             if (mounted) {
               context.go('/login');
             }
             return;
           }
-          debugPrint('[splash] Android ID verificado: coincide con la licencia');
+          debugPrint(
+            '[splash] Android ID verificado: coincide con la licencia',
+          );
         }
       } else {
         debugPrint(
@@ -166,8 +209,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
 
       // 7. Sesión activa (< 24h)
-      final sessionToken = await _secureStorage.read(key: 'session_token');
-      final sessionTime = await _secureStorage.read(key: 'session_time');
+      final (sessionToken, sessionTime) = await _boundedRouteStep(
+        'session-read',
+        () async {
+          final token = await _secureStorage.read(key: 'session_token');
+          final time = await _secureStorage.read(key: 'session_time');
+          return (token, time);
+        }(),
+      );
       if (!mounted) return;
 
       var sessionActive = false;
@@ -176,8 +225,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           sessionTime != null) {
         final lastLogin = DateTime.tryParse(sessionTime);
         if (lastLogin != null) {
-          sessionActive =
-              DateTime.now().difference(lastLogin).inHours < 24;
+          sessionActive = DateTime.now().difference(lastLogin).inHours < 24;
         }
       }
 
@@ -185,7 +233,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       // 8. Sesión activa -> Home (con tema por rol antes del primer frame)
       if (sessionActive) {
-        final savedRole = await _secureStorage.read(key: 'user_role') ?? '';
+        final savedRole =
+            (await _boundedRouteStep(
+              'role-read',
+              _secureStorage.read(key: 'user_role'),
+            )) ??
+            '';
         if (mounted && savedRole.isNotEmpty) {
           setDefaultThemeForRole(ref, savedRole);
         }
@@ -201,8 +254,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     } catch (e) {
       debugPrint('[splash] Error splash: $e');
       if (mounted) {
-        context.go('/login');
+        // Fail-open: respeta si hay usuarios (register en primera vez).
+        await _goFallback();
       }
+    }
+  }
+
+  /// Ejecuta un paso de la decisión de ruta con su propio fence de tiempo y
+  /// logging `[splash] STEP ok|fail`: loguea START antes, OK al resolver y
+  /// FAIL si el paso lanza o excede [_routeStepTimeout] (re-lanzando la
+  /// excepción para que el caller haga fail-open).
+  Future<T> _boundedRouteStep<T>(String name, Future<T> future) async {
+    debugPrint('[splash] [STEP] START $name');
+    try {
+      final value = await future.timeout(_routeStepTimeout);
+      debugPrint('[splash] [STEP] OK $name');
+      return value;
+    } catch (e) {
+      debugPrint('[splash] [STEP] FAIL $name: $e');
+      rethrow;
     }
   }
 
@@ -215,17 +285,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     var hasUsers = true;
     try {
       if (widget.hasUsersOverride != null) {
-        hasUsers = await widget
-            .hasUsersOverride!()
-            .timeout(_fallbackUsersTimeout);
+        hasUsers = await widget.hasUsersOverride!().timeout(
+          _fallbackUsersTimeout,
+        );
       } else {
-        final users = await AppDatabase.instance
-            .getAllUsers()
-            .timeout(_fallbackUsersTimeout);
+        final users = await AppDatabase.instance.getAllUsers().timeout(
+          _fallbackUsersTimeout,
+        );
         hasUsers = users.isNotEmpty;
       }
     } catch (e) {
-      debugPrint('[splash] Fallback: no se pudo consultar usuarios ($e) -> login');
+      debugPrint(
+        '[splash] Fallback: no se pudo consultar usuarios ($e) -> login',
+      );
       hasUsers = true;
     }
 
@@ -274,22 +346,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             const SizedBox(height: 8),
             const Text(
               'Punto de Venta',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.white70),
             ),
             const SizedBox(height: 48),
-            const CircularProgressIndicator(
-              color: Colors.white,
-            ),
+            const CircularProgressIndicator(color: Colors.white),
             const SizedBox(height: 24),
             const Text(
               'Verificando licencia...',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.white70),
             ),
           ],
         ),
