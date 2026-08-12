@@ -70,4 +70,26 @@ void main() {
       expect(await ThemePreferenceStore.read(), ThemeMode.light);
     });
   });
+
+  group('resolveMode — saved choice overrides role default', () {
+    test('saved light overrides cocina dark default', () {
+      expect(resolveMode(ThemeMode.light, 'cocina'), ThemeMode.light);
+    });
+
+    test('saved dark overrides admin light default', () {
+      expect(resolveMode(ThemeMode.dark, 'admin'), ThemeMode.dark);
+    });
+
+    test('saved system overrides any role default', () {
+      expect(resolveMode(ThemeMode.system, 'mesero'), ThemeMode.system);
+    });
+
+    test('no saved choice: cocina role default dark wins', () {
+      expect(resolveMode(null, 'cocina'), ThemeMode.dark);
+    });
+
+    test('no saved choice: redes role default light wins', () {
+      expect(resolveMode(null, 'redes'), ThemeMode.light);
+    });
+  });
 }

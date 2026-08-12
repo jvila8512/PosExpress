@@ -9,7 +9,9 @@ import 'theme_preferences.dart';
 /// Defaults to light mode. A persisted user choice (see [ThemePreferenceStore])
 /// is seeded into [ThemePrefs.initialMode] in `main()` before `runApp()`.
 /// After login, call [setDefaultThemeForRole] to apply the role-based default.
-final themeModeProvider = StateProvider<ThemeMode>((_) => ThemePrefs.initialMode ?? ThemeMode.light);
+final themeModeProvider = StateProvider<ThemeMode>(
+  (_) => ThemePrefs.initialMode ?? ThemeMode.light,
+);
 
 /// Singleton provider for the Hamburguesa theme data (light + dark).
 final hamburguesaThemeProvider = Provider<HamburguesaThemeData>((_) {
@@ -30,7 +32,8 @@ final currentThemeProvider = Provider<ThemeData>((ref) {
     case ThemeMode.light:
       return theme.light;
     case ThemeMode.system:
-      final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      final brightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
       return brightness == Brightness.dark ? theme.dark : theme.light;
   }
 });
@@ -61,10 +64,16 @@ ThemeMode defaultThemeForRole(String role) {
   }
 }
 
+/// Resuelve el modo efectivo para [role]: si hay una preferencia guardada
+/// ([saved]), la elección explícita del usuario gana sobre el default del
+/// rol; si no hay elección guardada, aplica [defaultThemeForRole].
+ThemeMode resolveMode(ThemeMode? saved, String role) =>
+    saved ?? defaultThemeForRole(role);
+
 /// Returns the effective mode for a role, honoring a persisted explicit
 /// choice first (the user's choice overrides the role default, per spec).
 ThemeMode themeModeForRole(String role) =>
-    ThemePrefs.initialMode ?? defaultThemeForRole(role);
+    resolveMode(ThemePrefs.initialMode, role);
 
 /// Updates [themeModeProvider] based on the user's role.
 ///
