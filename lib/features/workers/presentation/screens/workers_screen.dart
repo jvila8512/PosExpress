@@ -9,6 +9,48 @@ import 'package:uuid/uuid.dart';
 
 const _secureStorage = FlutterSecureStorage();
 
+/// Roles del negocio y sus etiquetas visibles.
+const Map<String, String> _roleLabels = {
+  'super_admin': 'Super Admin',
+  'admin': 'Admin',
+  'redes': 'Redes',
+  'cocina': 'Cocina',
+  'mesero': 'Mesero',
+  'domicilio': 'Domicilio',
+  'vendedor': 'Redes', // alias legacy
+};
+
+String _roleLabel(String role) => _roleLabels[role] ?? role;
+
+/// Roles asignables al crear/editar un usuario (excluye super_admin).
+const List<String> _assignableRoles = [
+  'admin',
+  'redes',
+  'cocina',
+  'mesero',
+  'domicilio',
+];
+
+/// Icono y color por rol para las tarjetas.
+(IconData, Color) _roleVisual(String role) {
+  switch (role) {
+    case 'admin':
+    case 'super_admin':
+      return (Icons.admin_panel_settings, AppColors.accent);
+    case 'redes':
+    case 'vendedor':
+      return (Icons.campaign, Colors.purple);
+    case 'cocina':
+      return (Icons.restaurant, Colors.deepOrange);
+    case 'mesero':
+      return (Icons.table_restaurant, Colors.teal);
+    case 'domicilio':
+      return (Icons.delivery_dining, Colors.indigo);
+    default:
+      return (Icons.person, AppColors.accent);
+  }
+}
+
 class WorkersScreen extends ConsumerStatefulWidget {
   const WorkersScreen({super.key});
 
@@ -50,17 +92,17 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
 
       // 3. Show all users including self, but filter by role visibility
       // super_admin sees everyone except other super_admins (keeps self)
-      // admin sees vendedores + other admins (not super_admins, keeps self)
+      // admin sees all business roles (not super_admin except self)
       if (_isSuperAdmin) {
         _users = allUsers.where((u) => u.role != 'super_admin' || u.id == _currentUserId).toList();
       } else if (role == 'admin') {
-        _users = allUsers.where((u) => u.role == 'vendedor' || u.role == 'admin').toList();
+        _users = allUsers.where((u) => u.role != 'super_admin' || u.id == _currentUserId).toList();
       } else {
         _users = [];
       }
 
-      // 4. Count current vendedores
-      _currentVendedorCount = _users.where((u) => u.role == 'vendedor').length;
+      // 4. Count sales-facing users (redes / legacy vendedor) for plan limit
+      _currentVendedorCount = _users.where((u) => u.role == 'redes' || u.role == 'vendedor').length;
 
       // 5. Get maxVendedores from license plan
       await _loadMaxVendedores();
@@ -145,7 +187,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
           const SizedBox(height: 8),
           if (_isSuperAdmin) ...[
             Text(
-              'Podés crear administradores y vendedores',
+              'Podés crear usuarios con cualquier rol del negocio',
               style: TextStyle(color: Colors.grey.shade500),
             ),
             const SizedBox(height: 24),
@@ -159,16 +201,16 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
-          ] else if (_canAddVendedor) ...[
+          ] else if (_currentRole == 'admin') ...[
             Text(
-              'Podés crear hasta $_maxVendedores vendedor${_maxVendedores == 1 ? '' : 'es'} según tu plan',
+              'Podés crear usuarios de Redes, Cocina, Mesero y Domicilio',
               style: TextStyle(color: Colors.grey.shade500),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => _showAddUserDialog(),
               icon: const Icon(Icons.person_add),
-              label: const Text('Agregar Vendedor'),
+              label: const Text('Nuevo'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
@@ -177,7 +219,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
             ),
           ] else ...[
             Text(
-              'Alcanzaste el límite de $_maxVendedores vendedor${_maxVendedores == 1 ? '' : 'es'} de tu plan',
+              'Solo el administrador puede gestionar usuarios',
               style: TextStyle(color: Colors.orange.shade700, fontWeight: FontWeight.w500),
             ),
           ],
@@ -208,7 +250,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                   const Spacer(),
                   if (!_isSuperAdmin)
                     Text(
-                      'Vendedores: $_currentVendedorCount/$_maxVendedores',
+                      'Cupo Redes: $_currentVendedorCount/$_maxVendedores',
                       style: TextStyle(
                         color: _canAddVendedor ? Colors.grey.shade600 : Colors.orange.shade700,
                         fontSize: 13,
@@ -228,24 +270,17 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
   }
 
   Widget _buildUserCard(User user) {
-    final isVendedor = user.role == 'vendedor';
     final isCurrentUser = user.id == _currentUserId;
+    final (roleIcon, roleColor) = _roleVisual(user.role);
+    final roleChipColor = _roleVisual(user.role).$2;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isCurrentUser
-              ? AppColors.accent
-              : isVendedor
-                  ? Colors.green
-                  : AppColors.accent,
+          backgroundColor: isCurrentUser ? AppColors.accent : roleColor,
           child: Icon(
-            isCurrentUser
-                ? Icons.person
-                : isVendedor
-                    ? Icons.storefront
-                    : Icons.admin_panel_settings,
+            isCurrentUser ? Icons.person : roleIcon,
             color: Colors.white,
             size: 20,
           ),
@@ -277,14 +312,14 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: isVendedor ? Colors.green.shade100 : AppColors.accent.withValues(alpha: 0.1),
+                color: roleChipColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                isVendedor ? 'Vendedor' : 'Admin',
+                _roleLabel(user.role),
                 style: TextStyle(
                   fontSize: 12,
-                  color: isVendedor ? Colors.green.shade700 : AppColors.accent,
+                  color: roleChipColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -342,17 +377,18 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
       return FloatingActionButton.extended(
         onPressed: () => _showAddUserDialog(),
         icon: const Icon(Icons.person_add),
-        label: const Text('Nuevo Usuario'),
+        label: const Text('Nuevo'),
         backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       );
     }
 
-    if (_currentRole == 'admin' && _canAddVendedor) {
+    if (_currentRole == 'admin') {
+      // Admin can create business roles (redes/cocina/mesero/domicilio)
       return FloatingActionButton.extended(
         onPressed: () => _showAddUserDialog(),
         icon: const Icon(Icons.person_add),
-        label: const Text('Nuevo Vendedor'),
+        label: const Text('Nuevo'),
         backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
       );
@@ -366,14 +402,17 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
     final userController = TextEditingController();
     final passController = TextEditingController();
 
-    // Super_admin can choose role; admin always creates vendedor
-    String selectedRole = _isSuperAdmin ? 'admin' : 'vendedor';
+    // Super_admin can pick any role; admin picks business roles
+    final selectableRoles = _isSuperAdmin
+        ? _assignableRoles
+        : _assignableRoles.where((r) => r != 'admin').toList();
+    String selectedRole = selectableRoles.first;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(_isSuperAdmin ? 'Crear Usuario' : 'Agregar Vendedor'),
+          title: const Text('Nuevo Usuario'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -381,12 +420,12 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
               children: [
                 if (_isSuperAdmin) ...[
                   Text(
-                    'Como super_admin podés crear administradores y vendedores.',
+                    'Elegí el rol del negocio (Admin, Redes, Cocina, Mesero, Domicilio).',
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                   ),
                 ] else ...[
                   Text(
-                    'Vendedores: $_currentVendedorCount/$_maxVendedores de tu plan.',
+                    'Cupo de Redes: $_currentVendedorCount/$_maxVendedores de tu plan.',
                     style: TextStyle(
                       color: _canAddVendedor ? Colors.grey.shade600 : Colors.orange.shade700,
                       fontSize: 12,
@@ -418,15 +457,15 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                   ),
                   obscureText: true,
                 ),
-                // Role dropdown only for super_admin
-                if (_isSuperAdmin) ...[
-                  const SizedBox(height: 12),
+                // Role dropdown (super_admin: all, admin: business roles)
                   DropdownButtonFormField<String>(
                     value: selectedRole,
-                    items: const [
-                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                      DropdownMenuItem(value: 'vendedor', child: Text('Vendedor')),
-                    ],
+                    items: selectableRoles
+                        .map((r) => DropdownMenuItem(
+                              value: r,
+                              child: Text(_roleLabel(r)),
+                            ))
+                        .toList(),
                     onChanged: (v) {
                       setDialogState(() => selectedRole = v!);
                     },
@@ -435,7 +474,6 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                       prefixIcon: Icon(Icons.badge),
                     ),
                   ),
-                ],
               ],
             ),
           ),
@@ -455,12 +493,13 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                   return;
                 }
 
-                // Check vendedor limit when creating vendedor
-                if (selectedRole == 'vendedor' && !_canAddVendedor) {
+                // Check sales (redes) limit when creating a redes user
+                final isSalesRole = selectedRole == 'redes' || selectedRole == 'vendedor';
+                if (isSalesRole && !_canAddVendedor) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Alcanzaste el límite de $_maxVendedores vendedor${_maxVendedores == 1 ? '' : 'es'} de tu plan',
+                        'Alcanzaste el cupo de ${_maxVendedores} usuarios de Redes de tu plan',
                       ),
                       backgroundColor: Colors.orange,
                     ),
@@ -511,11 +550,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                   _loadData();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        selectedRole == 'admin'
-                            ? 'Administrador creado exitosamente'
-                            : 'Vendedor agregado exitosamente',
-                      ),
+                      content: Text('Usuario ${_roleLabel(selectedRole)} creado exitosamente'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -535,7 +570,8 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
   void _showEditUserDialog(User user) {
     final nameController = TextEditingController(text: user.fullName);
     final userController = TextEditingController(text: user.username);
-    String selectedRole = user.role;
+    // Normalizar roles legacy/root a uno asignable para evitar assert del dropdown
+    String selectedRole = _assignableRoles.contains(user.role) ? user.role : 'redes';
     bool isCurrentUser = user.id == _currentUserId;
 
     showDialog(
@@ -562,15 +598,17 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                     prefixIcon: Icon(Icons.alternate_email),
                   ),
                 ),
-                // Role dropdown only for super_admin editing non-self users
+                // Role dropdown: super_admin can edit any role (non-self); admin can set business roles
                 if (_isSuperAdmin && !isCurrentUser) ...[
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: selectedRole,
-                    items: const [
-                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                      DropdownMenuItem(value: 'vendedor', child: Text('Vendedor')),
-                    ],
+                    items: _assignableRoles
+                        .map((r) => DropdownMenuItem(
+                              value: r,
+                              child: Text(_roleLabel(r)),
+                            ))
+                        .toList(),
                     onChanged: (v) {
                       setDialogState(() => selectedRole = v!);
                     },

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:etecsa/core/database/app_database.dart';
+import 'package:etecsa/core/database/app_database.dart' hide TrustedContact;
 import 'package:etecsa/features/contacts/domain/entities/trusted_contact.dart';
 import 'package:etecsa/features/contacts/domain/repositories/contact_repository.dart';
 import 'package:etecsa/features/contacts/infrastructure/datasources/contact_datasource.dart';

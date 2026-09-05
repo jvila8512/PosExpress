@@ -12,6 +12,9 @@ abstract class OrderRepository {
   /// Get all orders for today.
   Future<List<RestaurantOrder>> getTodayOrders();
 
+  /// Get all orders created since [from] (inclusive), newest first.
+  Future<List<RestaurantOrder>> getOrdersSince(DateTime from);
+
   /// Get orders by state.
   Future<List<RestaurantOrder>> getOrdersByState(OrderState state);
 
@@ -26,4 +29,15 @@ abstract class OrderRepository {
 
   /// Search orders by client name or phone.
   Future<List<RestaurantOrder>> searchOrders(String query);
+
+  /// Persist the PED SMS send result for [orderId].
+  ///
+  /// Updates `sms_enviado` and `intentos_reenvio`: when [intentos] is
+  /// given it is set as-is, otherwise the current value is incremented
+  /// by 1.
+  Future<void> markSmsStatus(String orderId,
+      {required bool enviado, int? intentos});
+
+  /// Persist the kitchen ACK for the PED SMS of [orderId].
+  Future<void> markSmsConfirmado(String orderId, bool confirmado);
 }

@@ -9,6 +9,7 @@ import 'package:etecsa/config/theme/widgets/ticket_card.dart';
 import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
 import 'package:etecsa/features/orders/domain/entities/order_state.dart';
 import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 // ---------------------------------------------------------------------------
 // Order History Screen — PRD §15.6
@@ -33,6 +34,7 @@ class OrderHistoryScreen extends ConsumerStatefulWidget {
 }
 
 class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _searchController = TextEditingController();
   List<RestaurantOrder> _allOrders = [];
   bool _isLoading = true;
@@ -179,7 +181,13 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
     final filtered = _filteredOrders;
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
         title: Text('Historial (${filtered.length})'),
         actions: [
           if (_isLoading)

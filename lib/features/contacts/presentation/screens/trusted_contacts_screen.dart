@@ -7,6 +7,7 @@ import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart' hide TrustedContact;
 import 'package:etecsa/features/contacts/domain/entities/trusted_contact.dart';
 import 'package:etecsa/features/contacts/presentation/providers/contact_provider.dart';
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 // ---------------------------------------------------------------------------
 // Trusted Contacts Screen
@@ -26,6 +27,7 @@ class TrustedContactsScreen extends ConsumerStatefulWidget {
 
 class _TrustedContactsScreenState
     extends ConsumerState<TrustedContactsScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<User> _users = [];
 
   @override
@@ -225,7 +227,13 @@ class _TrustedContactsScreenState
     final contactsAsync = ref.watch(contactProvider);
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
         title: const Text('Contactos de Confianza'),
       ),
       floatingActionButton: FloatingActionButton(

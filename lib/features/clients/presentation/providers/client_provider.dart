@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:etecsa/core/database/app_database.dart';
+import 'package:etecsa/core/database/app_database.dart' hide RestaurantClient;
 import 'package:etecsa/features/clients/domain/entities/restaurant_client.dart';
 import 'package:etecsa/features/clients/domain/repositories/client_repository.dart';
 import 'package:etecsa/features/clients/infrastructure/datasources/client_datasource.dart';

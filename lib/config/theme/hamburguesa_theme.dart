@@ -21,10 +21,10 @@ class HamburguesaThemeData {
       brightness == Brightness.dark ? dark : light;
 
   /// Builds and caches the two themes once.
-  static HamburguesaThemeData _instance;
+  static HamburguesaThemeData? _instance;
   static HamburguesaThemeData get instance {
     _instance ??= HamburguesaThemeData._build();
-    return _instance;
+    return _instance!;
   }
 
   HamburguesaThemeData._build()

@@ -4,6 +4,13 @@ import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart' as
 import 'package:etecsa/features/orders/domain/entities/order_state.dart';
 import 'package:uuid/uuid.dart';
 
+/// Resuelve el próximo valor de `intentos_reenvio`.
+///
+/// Si se pasa [override], lo setea tal cual; si no, incrementa en 1.
+/// Función pura para que la regla sea testeable sin BD.
+int resolveNextRetryCount({required int current, int? override}) =>
+    override ?? current + 1;
+
 /// Drift datasource for restaurant orders.
 class OrderDatasource {
   final AppDatabase _db;
@@ -22,8 +29,11 @@ class OrderDatasource {
         canalOrigen: Value<String?>(order.canalOrigen),
         horaSolicitada: Value<String?>(order.horaSolicitada),
         metodoPago: Value<String?>(order.metodoPago),
-        montoTotal: order.montoTotal,
+        montoTotal: Value(order.montoTotal),
         creadoPorUsuarioId: order.creadoPorUsuarioId,
+        smsEnviado: Value(order.smsEnviado),
+        smsConfirmado: Value(order.smsConfirmado),
+        intentosReenvio: Value(order.intentosReenvio),
       ),
     );
 
@@ -69,6 +79,17 @@ class OrderDatasource {
     return orders;
   }
 
+  Future<List<domain.RestaurantOrder>> getOrdersSince(DateTime from) async {
+    final rows = await (_db.select(_db.restaurantOrders)
+          ..where((o) => o.fechaCreacion.isBiggerOrEqualValue(from))
+          ..orderBy([(o) => OrderingTerm.desc(o.fechaCreacion)]))
+        .get();
+
+    return rows
+        .map((row) => _mapRowToOrder(row, const <RestaurantOrderItem>[]))
+        .toList();
+  }
+
   Future<List<domain.RestaurantOrder>> getOrdersByState(OrderState state) async {
     final stateName = state.name;
     final rows = await (_db.select(_db.restaurantOrders)
@@ -89,6 +110,39 @@ class OrderDatasource {
           ..where((o) => o.id.equals(orderId)))
         .write(RestaurantOrdersCompanion(
           estado: Value(newState.name),
+        ));
+  }
+
+  /// Persiste el resultado del envío del SMS PED.
+  ///
+  /// Actualiza `sms_enviado` e `intentos_reenvio`: si se pasa [intentos]
+  /// lo setea tal cual; si no, incrementa el valor actual en 1.
+  Future<void> markSmsStatus(
+    String orderId, {
+    required bool enviado,
+    int? intentos,
+  }) async {
+    final current = await (_db.select(_db.restaurantOrders)
+          ..where((o) => o.id.equals(orderId)))
+        .getSingleOrNull();
+    final next = resolveNextRetryCount(
+      current: current?.intentosReenvio ?? 0,
+      override: intentos,
+    );
+    await (_db.update(_db.restaurantOrders)
+          ..where((o) => o.id.equals(orderId)))
+        .write(RestaurantOrdersCompanion(
+          smsEnviado: Value(enviado),
+          intentosReenvio: Value(next),
+        ));
+  }
+
+  /// Persiste la confirmación (ACK) del SMS por parte de Cocina.
+  Future<void> markSmsConfirmado(String orderId, bool confirmado) async {
+    await (_db.update(_db.restaurantOrders)
+          ..where((o) => o.id.equals(orderId)))
+        .write(RestaurantOrdersCompanion(
+          smsConfirmado: Value(confirmado),
         ));
   }
 
@@ -165,6 +219,9 @@ class OrderDatasource {
         price: i.precioUnitario,
       )).toList(),
       motivoCancelacion: row.motivoCancelacion,
+      smsEnviado: row.smsEnviado,
+      smsConfirmado: row.smsConfirmado,
+      intentosReenvio: row.intentosReenvio,
     );
   }
 

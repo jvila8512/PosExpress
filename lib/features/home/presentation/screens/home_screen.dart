@@ -2,21 +2,67 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
-import 'package:etecsa/data/repositories/home_repository.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/features/home/presentation/widgets/kpi_cards_row.dart';
-import 'package:etecsa/features/home/presentation/widgets/sales_bar_chart.dart';
-import 'package:etecsa/features/home/presentation/widgets/payment_donut_chart.dart';
-import 'package:etecsa/features/home/presentation/widgets/top_products_list.dart';
-import 'package:etecsa/features/home/presentation/widgets/alerts_banner.dart';
+import 'package:etecsa/features/orders/domain/entities/order_state.dart';
+import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
 import 'package:etecsa/features/license/presentation/widgets/license_alerts_banner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+bool _isCash(String? method) {
+  final m = method?.toLowerCase();
+  return m == 'efectivo' || m == 'cash';
+}
+
+bool _isTransfer(String? method) {
+  final m = method?.toLowerCase();
+  return m == 'transferencia' || m == 'transfer';
+}
+
+/// Datos del home calculados desde el modelo nuevo (`restaurant_orders`).
 final homeDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final repository = HomeRepository();
-  return await repository.loadHomeData();
+  final repo = ref.watch(orderRepositoryProvider);
+  final now = DateTime.now();
+  final monthStart = DateTime(now.year, now.month, 1);
+
+  final todayOrders = await repo.getTodayOrders();
+  final monthOrders = await repo.getOrdersSince(monthStart);
+
+  double salesToday = 0, cashToday = 0, transferToday = 0;
+  for (final o in todayOrders) {
+    salesToday += o.montoTotal;
+    if (_isCash(o.metodoPago)) {
+      cashToday += o.montoTotal;
+    } else if (_isTransfer(o.metodoPago)) {
+      transferToday += o.montoTotal;
+    }
+  }
+
+  double salesMonth = 0, cashMonth = 0, transferMonth = 0;
+  for (final o in monthOrders) {
+    salesMonth += o.montoTotal;
+    if (_isCash(o.metodoPago)) {
+      cashMonth += o.montoTotal;
+    } else if (_isTransfer(o.metodoPago)) {
+      transferMonth += o.montoTotal;
+    }
+  }
+
+  return {
+    'todayOrders': todayOrders,
+    'todayCount': todayOrders.length,
+    'pendingCount': todayOrders
+        .where((o) => o.estado == OrderState.registrado)
+        .length,
+    'salesToday': salesToday,
+    'cashToday': cashToday,
+    'transferToday': transferToday,
+    'salesMonth': salesMonth,
+    'cashMonth': cashMonth,
+    'transferMonth': transferMonth,
+    'monthCount': monthOrders.length,
+  };
 });
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -472,81 +518,102 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ─────────────────────────────────────────────────────────────
 
   Widget _buildAdminDashboard(Map<String, dynamic> data) {
-    final session = data['activeSession'] as dynamic;
-    final isSessionOpen = session != null && session.status == 'open';
-
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Session Status Banner
-        _buildSessionBanner(isSessionOpen, session),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // License Alerts
+          const LicenseAlertsBanner(),
+          const SizedBox(height: 16),
 
-        const SizedBox(height: 20),
+          // Nuevo Pedido shortcut (admin)
+          _buildActionButton(
+            icon: Icons.add_circle_outline,
+            label: 'Nuevo Pedido',
+            color: AppColors.accent,
+            onTap: () => context.go('/orders/new'),
+          ),
+          const SizedBox(height: 12),
 
-        // License Alerts
-        const LicenseAlertsBanner(),
+          // Daily Close shortcut
+          _buildActionButton(
+            icon: Icons.account_balance,
+            label: 'Cierre del Día',
+            color: AppColors.accent,
+            onTap: () => context.go('/daily-close'),
+          ),
+          const SizedBox(height: 24),
 
-        const SizedBox(height: 16),
+          // ====== HOY ======
+          _buildSectionTitle('HOY'),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _buildStatCard('Ventas', '\$${data['salesToday']}', Icons.attach_money, Colors.green),
+              const SizedBox(width: 12),
+              _buildStatCard('Efectivo', '\$${data['cashToday']}', Icons.payments, Colors.orange),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildStatCard('Transfer', '\$${data['transferToday']}', Icons.account_balance_wallet, Colors.purple),
+              const SizedBox(width: 12),
+              _buildStatCard('Pedidos', '${data['todayCount']}', Icons.receipt_long, AppColors.accent),
+            ],
+          ),
 
-        // Nuevo Pedido shortcut (admin)
-        _buildActionButton(
-          icon: Icons.add_circle_outline,
-          label: 'Nuevo Pedido',
-          color: AppColors.accent,
-          onTap: () => context.go('/orders/new'),
+          const SizedBox(height: 24),
+
+          // ====== MES ======
+          _buildSectionTitle('MES ACTUAL'),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _buildStatCard('Ventas', '\$${data['salesMonth']}', Icons.attach_money, AppColors.accent),
+              const SizedBox(width: 12),
+              _buildStatCard('Efectivo', '\$${data['cashMonth']}', Icons.payments, Colors.orange),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildStatCard('Transfer', '\$${data['transferMonth']}', Icons.account_balance_wallet, Colors.purple),
+              const SizedBox(width: 12),
+              _buildStatCard('Pedidos', '${data['monthCount']}', Icons.receipt_long, AppColors.accent),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Quick Access Buttons
+          _buildQuickAccessButtons(),
+          const SizedBox(height: 16),
+
+          // Export/Import shortcut (admin only)
+          _buildActionButton(
+            icon: Icons.file_upload,
+            label: 'Exportar/Importar (JSON)',
+            color: AppColors.accent,
+            onTap: () => context.go('/exports'),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey,
         ),
-        const SizedBox(height: 12),
-
-        // Daily Close shortcut
-        _buildActionButton(
-          icon: Icons.account_balance,
-          label: 'Cierre del Día',
-          color: AppColors.accent,
-          onTap: () => context.go('/daily-close'),
-        ),
-        const SizedBox(height: 20),
-
-        // KPI Cards
-        KPICardsRow(data: data, isVendedor: false),
-
-        const SizedBox(height: 24),
-
-        // Sales Bar Chart (Last 30 days)
-        SalesBarChart(dailySales: data['dailySales'] as Map<int, double>),
-
-        const SizedBox(height: 24),
-
-        // Payment Method Donut Chart
-        PaymentDonutChart(
-          paymentMethods: data['paymentMethods'] as Map<String, double>,
-        ),
-
-        const SizedBox(height: 24),
-
-        // Top Products List
-        TopProductsList(
-          products: data['topProducts'] as List<Map<String, dynamic>>,
-        ),
-
-        const SizedBox(height: 24),
-
-        // Quick Access Buttons
-        _buildQuickAccessButtons(),
-
-        const SizedBox(height: 16),
-
-        // Export/Import shortcut (admin only)
-        _buildActionButton(
-          icon: Icons.file_upload,
-          label: 'Exportar/Importar (JSON)',
-          color: AppColors.accent,
-          onTap: () => context.go('/exports'),
-        ),
-
-        const SizedBox(height: 32),
-      ],
       ),
     );
   }
@@ -739,117 +806,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // ── Helpers ──────────────────────────────────────────────────
 
-  int _getTodayOrdersCount(Map<String, dynamic> data) {
-    try {
-      final orders = data['orders'] as List? ?? [];
-      return orders.length;
-    } catch (_) {
-      return 0;
-    }
-  }
+  int _getTodayOrdersCount(Map<String, dynamic> data) =>
+      (data['todayCount'] as int?) ?? 0;
 
-  int _getPendingConfirmationCount(Map<String, dynamic> data) {
-    try {
-      final orders = data['orders'] as List? ?? [];
-      return orders.where((o) {
-        final estado = o is Map ? o['estado']?.toString() : '';
-        return estado == 'registrado';
-      }).length;
-    } catch (_) {
-      return 0;
-    }
-  }
-
-  // ── Existing widgets (kept for admin) ─────────────────────────
-
-  Widget _buildSessionBanner(bool isOpen, dynamic session) {
-    return GestureDetector(
-      onTap: isOpen ? () => context.go('/daily-close') : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isOpen
-                ? [const Color(0xFF1D9E75), const Color(0xFF1D9E75).withValues(alpha: 0.8)]
-                : [Colors.orange.shade400, Colors.orange.shade600],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: (isOpen ? const Color(0xFF1D9E75) : Colors.orange).withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                isOpen ? Icons.lock_open : Icons.lock,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isOpen ? 'Caja ABIERTA' : 'Caja CERRADA',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (isOpen) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      'Ventas del día: \$${(session?.totalSales ?? 0).toStringAsFixed(0)}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (!isOpen)
-              ElevatedButton(
-                onPressed: () => context.go('/daily-close'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.orange.shade700,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Text(
-                  'Abrir caja',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              )
-            else
-              Icon(
-                Icons.chevron_right,
-                color: Colors.white.withValues(alpha: 0.7),
-                size: 20,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+  int _getPendingConfirmationCount(Map<String, dynamic> data) =>
+      (data['pendingCount'] as int?) ?? 0;
 
   Widget _buildQuickAccessButtons() {
     return Column(

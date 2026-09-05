@@ -7,6 +7,7 @@ import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/clients/domain/entities/restaurant_client.dart';
 import 'package:etecsa/features/clients/presentation/providers/client_provider.dart';
 import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 // ---------------------------------------------------------------------------
 // Client Management Screen
@@ -25,6 +26,7 @@ class ClientManagementScreen extends ConsumerStatefulWidget {
 
 class _ClientManagementScreenState
     extends ConsumerState<ClientManagementScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _searchController = TextEditingController();
 
   @override
@@ -235,7 +237,13 @@ class _ClientManagementScreenState
     final clientsAsync = ref.watch(clientProvider);
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
         title: const Text('Clientes'),
       ),
       floatingActionButton: FloatingActionButton(

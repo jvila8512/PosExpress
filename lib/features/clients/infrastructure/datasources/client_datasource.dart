@@ -64,7 +64,7 @@ class ClientDatasource {
         .go();
   }
 
-  domain.RestaurantClient _mapRow(RestaurantClientRow row) {
+  domain.RestaurantClient _mapRow(RestaurantClient row) {
     return domain.RestaurantClient(
       id: row.id,
       nombre: row.nombre,

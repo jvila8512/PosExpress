@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/features/shared/widgets/side_menu.dart';
-import 'package:etecsa/core/database/app_database.dart';
+import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
+import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 const _dashboardSecureStorage = FlutterSecureStorage();
@@ -18,11 +19,13 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSuperAdmin = false;
+  late Future<Map<String, dynamic>> _statsFuture;
 
   @override
   void initState() {
     super.initState();
     _checkAdminStatus();
+    _statsFuture = _loadStats();
   }
 
   Future<void> _checkAdminStatus() async {
@@ -34,6 +37,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       });
     }
   }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
@@ -44,24 +48,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         leading: IconButton(icon: const Icon(Icons.menu), onPressed: () => _scaffoldKey.currentState?.openDrawer()),
       ),
       body: FutureBuilder(
-        future: _loadStats(),
+        future: _statsFuture,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return _buildErrorState();
+          }
+
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
           
           final stats = snapshot.data!;
-          final session = stats['session'] as Session?;
-          final todayOrders = stats['todayOrders'] as List<Order>;
+          final todayOrders = stats['todayOrders'] as List<RestaurantOrder>;
           
           return SingleChildScrollView(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Session status - compact
-                _buildSessionBanner(session),
-                
-                const SizedBox(height: 12),
-                
                 // ====== HOY ======
                 const Text('HOY', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
                 const SizedBox(height: 8),
@@ -136,42 +138,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildSessionBanner(Session? session) {
-    if (session != null && session.status == 'open') {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.green.shade100,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green.shade700, size: 18),
-            const SizedBox(width: 6),
-            Text('Caja ABIERTA', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade700)),
-            const Spacer(),
-            Text('\$${session.totalSales.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade700)),
-          ],
-        ),
-      );
-    } else {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.orange.shade100,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.warning, color: Colors.orange.shade700, size: 18),
-            const SizedBox(width: 6),
-            Text('Caja cerrada', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange.shade700)),
-          ],
-        ),
-      );
-    }
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Error al cargar los datos de ventas'),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _statsFuture = _loadStats();
+              });
+            },
+            child: const Text('Reintentar'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildStatCard(String title, String value, Color color) {
@@ -207,75 +191,40 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<Map<String, dynamic>> _loadStats() async {
-    final db = AppDatabase.instance;
-    final session = await db.getActiveSession();
-    
+    final repository = ref.read(orderRepositoryProvider);
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+
+    final todayOrders = await repository.getTodayOrders();
+    final monthOrders = await repository.getOrdersSince(monthStart);
+
     // ====== HOY ======
-    List<Order> todayOrders = [];
     double salesToday = 0;
     double cashToday = 0;
     double transferToday = 0;
-    
-    if (session != null) {
-      todayOrders = await db.getPaidOrdersBySession(session.id);
-    } else {
-      final allSessions = await db.getAllSessions();
-      final today = DateTime.now();
-      final todayStart = DateTime(today.year, today.month, today.day);
-      
-      final todaySessions = allSessions.where((s) {
-        return s.openingTime.isAfter(todayStart) || s.openingTime.isAtSameMomentAs(todayStart);
-      }).toList();
-      
-      for (final s in todaySessions) {
-        final orders = await db.getPaidOrdersBySession(s.id);
-        todayOrders.addAll(orders);
-      }
-    }
-    
     for (final order in todayOrders) {
-      salesToday += order.totalAmount;
-      final payments = await db.getOrderPayments(order.id);
-      for (final payment in payments) {
-        if (payment.paymentMethod == 'efectivo') {
-          cashToday += payment.amount - (payment.changeGiven ?? 0);
-        } else if (payment.paymentMethod == 'transferencia') {
-          transferToday += payment.amount;
-        }
+      salesToday += order.montoTotal;
+      if (_isCash(order.metodoPago)) {
+        cashToday += order.montoTotal;
+      } else if (_isTransfer(order.metodoPago)) {
+        transferToday += order.montoTotal;
       }
     }
-    
+
     // ====== MES ACTUAL ======
-    final allSessionsMonth = await db.getAllSessions();
-    final now = DateTime.now();
-    final monthStart = DateTime(now.year, now.month, 1);
-    
     double salesMonth = 0;
     double cashMonth = 0;
     double transferMonth = 0;
-    List<Order> monthOrders = [];
-    
-    final monthSessions = allSessionsMonth.where((s) => s.openingTime.isAfter(monthStart)).toList();
-    
-    for (final s in monthSessions) {
-      final orders = await db.getPaidOrdersBySession(s.id);
-      monthOrders.addAll(orders);
-    }
-    
     for (final order in monthOrders) {
-      salesMonth += order.totalAmount;
-      final payments = await db.getOrderPayments(order.id);
-      for (final payment in payments) {
-        if (payment.paymentMethod == 'efectivo') {
-          cashMonth += payment.amount - (payment.changeGiven ?? 0);
-        } else if (payment.paymentMethod == 'transferencia') {
-          transferMonth += payment.amount;
-        }
+      salesMonth += order.montoTotal;
+      if (_isCash(order.metodoPago)) {
+        cashMonth += order.montoTotal;
+      } else if (_isTransfer(order.metodoPago)) {
+        transferMonth += order.montoTotal;
       }
     }
-    
+
     return {
-      'session': session,
       'salesToday': salesToday,
       'cashToday': cashToday,
       'transferToday': transferToday,
@@ -286,5 +235,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       'transferMonth': transferMonth,
       'monthOrders': monthOrders,
     };
+  }
+
+  bool _isCash(String? method) {
+    final normalized = method?.toLowerCase();
+    return normalized == 'efectivo' || normalized == 'cash';
+  }
+
+  bool _isTransfer(String? method) {
+    final normalized = method?.toLowerCase();
+    return normalized == 'transferencia' || normalized == 'transfer';
   }
 }

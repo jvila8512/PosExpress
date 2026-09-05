@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/security/license_service.dart';
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 class MyLicenseScreen extends StatefulWidget {
   const MyLicenseScreen({super.key});
@@ -14,6 +15,7 @@ class MyLicenseScreen extends StatefulWidget {
 }
 
 class _MyLicenseScreenState extends State<MyLicenseScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = true;
   LicenseValidationResult? _licenseResult;
   final String _whatsAppJavier = LicenseService.JAVIER_WHATSAPP;
@@ -102,13 +104,15 @@ class _MyLicenseScreenState extends State<MyLicenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
         title: const Text('Mi Licencia'),
         backgroundColor: AppColors.accent,
         foregroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/'),
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
       ),
       body: _isLoading

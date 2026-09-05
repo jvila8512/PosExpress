@@ -7,6 +7,7 @@ import 'package:drift/drift.dart';
 
 import 'package:etecsa/core/database/app_database.dart' hide RestaurantOrder;
 import 'package:etecsa/core/database/database_provider.dart';
+import 'package:etecsa/features/daily_close/domain/daily_close_totals.dart';
 import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
 import 'package:etecsa/features/orders/domain/entities/order_state.dart';
 import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
@@ -43,6 +44,8 @@ class DailyCloseState {
   final double totalSales;
   final double cashSales;
   final double transferSales;
+  final double diferencia;
+  final double unconfirmedPct;
   final double solidSales;
   final double liquidSales;
   final List<ProductSalesEntry> topProducts;
@@ -84,6 +87,8 @@ class DailyCloseState {
     this.totalSales = 0,
     this.cashSales = 0,
     this.transferSales = 0,
+    this.diferencia = 0,
+    this.unconfirmedPct = 0,
     this.solidSales = 0,
     this.liquidSales = 0,
     this.topProducts = const [],
@@ -114,6 +119,8 @@ class DailyCloseState {
     double? totalSales,
     double? cashSales,
     double? transferSales,
+    double? diferencia,
+    double? unconfirmedPct,
     double? solidSales,
     double? liquidSales,
     List<ProductSalesEntry>? topProducts,
@@ -143,6 +150,8 @@ class DailyCloseState {
       totalSales: totalSales ?? this.totalSales,
       cashSales: cashSales ?? this.cashSales,
       transferSales: transferSales ?? this.transferSales,
+      diferencia: diferencia ?? this.diferencia,
+      unconfirmedPct: unconfirmedPct ?? this.unconfirmedPct,
       solidSales: solidSales ?? this.solidSales,
       liquidSales: liquidSales ?? this.liquidSales,
       topProducts: topProducts ?? this.topProducts,
@@ -226,10 +235,24 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
         }
       }
 
+      // ── Classify categories as liquid/solid by name (configurable) ──
+      final allCategories = await _db.getAllCategories();
+      final liquidCategoryIds = <String>{
+        for (final c in allCategories)
+          if (_isLiquidCategoryName(c.name)) c.id,
+      };
+
       // ── Aggregate order data ────────────────────────────────────
-      double totalSales = 0;
-      double cashSales = 0;
-      double transferSales = 0;
+      // Ventas del día: solo estados terminales de venta (PRD §13.1).
+      // Los cancelados se cuentan aparte sobre la lista completa.
+      final sales = summarizeSales(todayOrders);
+      final totalSales = sales.totalSales;
+      final cashSales = sales.cashSales;
+      final transferSales = sales.transferSales;
+      final diferencia = sales.diferencia;
+      final unconfirmedPct = sales.unconfirmedPct;
+      final ordersWithUnconfirmedPayment = sales.unconfirmedCount;
+
       double solidSales = 0;
       double liquidSales = 0;
       double productionCost = 0;
@@ -237,31 +260,9 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
       final productAmount = <String, double>{};
       int cancelledOrders = 0;
       final cancellationReasons = <String, int>{};
-      int ordersWithUnconfirmedPayment = 0;
 
       for (final order in todayOrders) {
-        totalSales += order.montoTotal;
-
-        // Payment method grouping (normalise to lowercase)
-        final metodo = (order.metodoPago ?? '').toLowerCase();
-        if (metodo == 'efectivo' || metodo == 'cash') {
-          cashSales += order.montoTotal;
-        } else if (metodo == 'transferencia' ||
-            metodo == 'transfer' ||
-            metodo == 'transferencia') {
-          transferSales += order.montoTotal;
-        }
-
-        // Check for unconfirmed payment
-        if (order.estado != OrderState.cancelado &&
-            order.estado != OrderState.cerrado &&
-            order.estado != OrderState.entregado &&
-            order.estado != OrderState.pagado &&
-            order.metodoPago == null) {
-          ordersWithUnconfirmedPayment++;
-        }
-
-        // Cancelled orders
+        // Cancelled orders (indicador aparte, lista completa)
         if (order.estado == OrderState.cancelado) {
           cancelledOrders++;
           final reason =
@@ -269,17 +270,21 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
           cancellationReasons[reason] =
               (cancellationReasons[reason] ?? 0) + 1;
         }
+      }
 
+      final salesOrders = todayOrders.where(
+        (o) => validSaleStates.contains(o.estado),
+      );
+      for (final order in salesOrders) {
         // Product-level aggregation
         for (final item in order.items) {
           final product = productByCode[item.code];
           final categoryId = product?.categoryId ?? '';
 
-          // Determine solid vs liquid
-          if (categoryId == 'solidos') {
+          // Determine solid vs liquid (by category name, unknown → liquid)
+          if (!liquidCategoryIds.contains(categoryId)) {
             solidSales += item.subtotal;
           } else {
-            // liquidos, postres, or unknown → treat as liquid
             liquidSales += item.subtotal;
           }
 
@@ -398,24 +403,14 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
           ? deliveryTimes.reduce((a, b) => a + b) / deliveryTimes.length
           : 0.0;
 
-      // ── Build state history map for orders with unconfirmed SMS ─
-      int unconfirmedCount = 0;
-      for (final order in todayOrders) {
-        // An order with an SMS-based origin (e.g. SMS/WhatsApp)
-        // that does NOT have the smsConfirmado flag
-        if (order.canalOrigen != null &&
-            order.canalOrigen!.toLowerCase().contains('sms') &&
-            order.estado != OrderState.cancelado) {
-          unconfirmedCount++;
-        }
-      }
-
       state = state.copyWith(
         isLoading: false,
         orders: todayOrders,
         totalSales: totalSales,
         cashSales: cashSales,
         transferSales: transferSales,
+        diferencia: diferencia,
+        unconfirmedPct: unconfirmedPct,
         solidSales: solidSales,
         liquidSales: liquidSales,
         topProducts: topProducts,
@@ -434,7 +429,7 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
         totalOrders: todayOrders.length,
         cancelledOrders: cancelledOrders,
         cancellationReasons: cancellationReasons,
-        ordersWithUnconfirmedPayment: unconfirmedCount,
+        ordersWithUnconfirmedPayment: ordersWithUnconfirmedPayment,
         avgKitchenTimeMinutes: avgKitchen,
         avgDeliveryTimeMinutes: avgDelivery,
       );
@@ -597,6 +592,30 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
 
   List<Product> _allProducts = [];
 
+  // ─── Category helpers ──────────────────────────────────────────────
+
+  static const _liquidKeywords = [
+    'LÍQUID', 'LIQUID', 'BEBIDA', 'JUGO', 'REFRESCO', 'AGUA', 'GASEOSA',
+    'LICUADO', 'BATIDO', 'MALTEADA', 'COCTEL', 'BATIDO', 'JUGOS',
+  ];
+
+  static const _solidKeywords = [
+    'SÓLID', 'SOLID', 'COMIDA', 'HAMB', 'SANDWICH', 'BOCADITO', 'ENTRADA',
+    'PLATO', 'ARROZ', 'PASTA', 'CARNE', 'POLLO', 'PATACON', 'POSTRE',
+    'PICADERA', 'PIZZA', 'FULL',
+  ];
+
+  /// Determines whether a category name represents a liquid product.
+  bool _isLiquidCategoryName(String name) {
+    final n = name.toUpperCase();
+    final liquid = _liquidKeywords.any(n.contains);
+    final solid = _solidKeywords.any(n.contains);
+    if (liquid && !solid) return true;
+    if (solid && !liquid) return false;
+    // Ambiguous or unrecognized → assume solid (food is the norm)
+    return false;
+  }
+
   Future<List<Product>> _getAllProducts() async {
     _allProducts = await (_db.select(_db.products)
           ..where((p) => p.isDeleted.equals(false)))
@@ -612,7 +631,7 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
     return (_db.select(_db.dailyExpenses)
           ..where((e) =>
               e.fecha.isBiggerOrEqualValue(startOfDay) &
-              e.fecha.isLessThanValue(endOfDay))
+              e.fecha.isSmallerThanValue(endOfDay))
           ..orderBy([(e) => OrderingTerm.desc(e.fecha)]))
         .get();
   }
@@ -625,7 +644,7 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
     return (_db.select(_db.dailyPurchases)
           ..where((p) =>
               p.fecha.isBiggerOrEqualValue(startOfDay) &
-              p.fecha.isLessThanValue(endOfDay))
+              p.fecha.isSmallerThanValue(endOfDay))
           ..orderBy([(p) => OrderingTerm.desc(p.fecha)]))
         .get();
   }
@@ -638,7 +657,7 @@ class DailyCloseNotifier extends Notifier<DailyCloseState> {
     return (_db.select(_db.dailyPayroll)
           ..where((p) =>
               p.fecha.isBiggerOrEqualValue(startOfDay) &
-              p.fecha.isLessThanValue(endOfDay)))
+              p.fecha.isSmallerThanValue(endOfDay)))
         .get();
   }
 

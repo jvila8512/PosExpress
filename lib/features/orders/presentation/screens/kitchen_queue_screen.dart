@@ -12,6 +12,7 @@ import 'package:etecsa/config/theme/widgets/order_timer.dart';
 import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
 import 'package:etecsa/features/orders/domain/entities/order_state.dart';
 import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 // ---------------------------------------------------------------------------
 // Cocina Kitchen Queue Screen — PRD §15.7
@@ -43,6 +44,7 @@ class KitchenQueueScreen extends ConsumerStatefulWidget {
 }
 
 class _KitchenQueueScreenState extends ConsumerState<KitchenQueueScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   Timer? _refreshTimer;
   List<RestaurantOrder> _pendingOrders = [];
   List<RestaurantOrder> _inKitchenOrders = [];
@@ -150,6 +152,8 @@ class _KitchenQueueScreenState extends ConsumerState<KitchenQueueScreen> {
     return Theme(
       data: HamburguesaThemeData.instance.dark,
       child: Scaffold(
+        key: _scaffoldKey,
+        drawer: SideMenu(scaffoldKey: _scaffoldKey),
         appBar: _buildAppBar(),
         body: _buildBody(),
       ),
@@ -158,6 +162,10 @@ class _KitchenQueueScreenState extends ConsumerState<KitchenQueueScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.menu),
+        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
       title: const Text('Cocina — Cola de Pedidos'),
       actions: [
         if (_isLoading)

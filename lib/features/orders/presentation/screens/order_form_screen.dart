@@ -10,11 +10,14 @@ import 'package:etecsa/features/clients/domain/entities/restaurant_client.dart';
 import 'package:etecsa/features/clients/presentation/providers/client_provider.dart';
 import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
 import 'package:etecsa/features/orders/domain/entities/order_state.dart';
+import 'package:etecsa/features/contacts/presentation/providers/contact_provider.dart';
 import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
+import 'package:etecsa/features/orders/presentation/screens/order_submit_helpers.dart';
 import 'package:etecsa/features/products/presentation/providers/products_provider.dart';
 import 'package:etecsa/features/products/presentation/providers/categories_provider.dart';
 import 'package:etecsa/core/database/app_database.dart'
     show Product, Category;
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 // ---------------------------------------------------------------------------
 // Redes Order Form Screen
@@ -34,6 +37,7 @@ class OrderFormScreen extends ConsumerStatefulWidget {
 }
 
 class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   // ── Cliente ──────────────────────────────────────────────────────────
   final _phoneSearchController = TextEditingController();
   RestaurantClient? _selectedClient;
@@ -54,6 +58,7 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
   // ── Envío ────────────────────────────────────────────────────────────
   bool _isSubmitting = false;
   bool _orderSent = false;
+  bool _smsPending = false;
   String? _createdOrderId;
 
   @override
@@ -254,9 +259,7 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
       return;
     }
 
-    setState(() => _isSubmitting = true);
-
-    final products = ref.read(productsProvider).products;
+    setState(() => _isSubmitting = true);    final products = ref.read(productsProvider).products;
     final orderId = _generateOrderId();
     final now = DateTime.now();
 
@@ -285,15 +288,33 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
     );
 
     try {
-      await ref.read(orderProvider.notifier).createOrder(order);
+      // Resolver el número de Cocina desde Contactos de Confianza.
+      final kitchenPhones = await ref
+          .read(contactRepositoryProvider)
+          .getActivePhonesForRole('cocina');
+      final kitchenPhone = resolveKitchenPhone(kitchenPhones);
+
+      final smsOk = await ref
+          .read(orderProvider.notifier)
+          .createOrder(order, destinationPhone: kitchenPhone);
 
       if (mounted) {
         setState(() {
           _isSubmitting = false;
           _orderSent = true;
           _createdOrderId = orderId;
+          _smsPending = kitchenPhone == null || !smsOk;
         });
-        _showSnack('Pedido $orderId enviado a cocina ✅');
+        if (kitchenPhone == null) {
+          _showSnack(
+              'Pedido guardado SIN enviar SMS: configurá el número de Cocina en Contactos de Confianza');
+        } else if (smsOk) {
+          _showSnack(
+              'Pedido $orderId enviado a cocina — esperando confirmación');
+        } else {
+          _showSnack(
+              'Pedido guardado pero SMS no enviado — reintentá desde Seguimiento');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -301,6 +322,22 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
         _showSnack('Error al enviar pedido: $e');
       }
     }
+  }
+
+  /// Handler del botón "Enviar a cocina".
+  ///
+  /// El botón nunca queda en silencio: si falta cliente o productos,
+  /// explica qué falta en vez de quedar deshabilitado sin feedback.
+  void _handleSendPressed() {
+    final blocker = submitBlockerMessage(
+      hasClient: _selectedClient != null,
+      hasItems: _hasItems,
+    );
+    if (blocker != null) {
+      _showSnack(blocker);
+      return;
+    }
+    _submitOrder();
   }
 
   void _showSnack(String msg) {
@@ -328,10 +365,8 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
     // Productos filtrados (no eliminados — ya filtrado por provider)
     final allProducts = productsState.products;
 
-    // Categorías relevantes: SÓLIDOS, LÍQUIDOS
-    final categories = categoriesState.categories
-        .where((c) => c.name == 'SÓLIDOS' || c.name == 'LÍQUIDOS')
-        .toList();
+    // Categorías: todas las que existan en la BD
+    final categories = categoriesState.categories;
 
     // Productos agrupados por categoría
     final grouped = <String, List<Product>>{};
@@ -359,7 +394,13 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
         : (grouped[_selectedCategoryId] ?? []);
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
         title: Text(
           _orderSent ? 'Pedido Enviado' : 'Nuevo Pedido',
         ),
@@ -414,6 +455,16 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
               ),
               textAlign: TextAlign.center,
             ),
+            if (_smsPending) ...[
+              const SizedBox(height: 8),
+              Text(
+                'SMS pendiente de envío — reintentá desde Seguimiento',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.warning,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
               'Cuando cocina confirme, el estado cambiará automáticamente.',
@@ -425,6 +476,7 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
               onPressed: () {
                 setState(() {
                   _orderSent = false;
+                  _smsPending = false;
                   _createdOrderId = null;
                   _quantities.clear();
                   _clearClient();
@@ -962,11 +1014,10 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
               ),
             ),
 
-            // Botón Enviar a cocina
+            // Botón Enviar a cocina: siempre responde; si falta algo,
+            // _handleSendPressed explica qué falta con un Snack.
             FilledButton.icon(
-              onPressed: (_selectedClient != null && _hasItems && !_isSubmitting)
-                  ? _submitOrder
-                  : null,
+              onPressed: _isSubmitting ? null : _handleSendPressed,
               icon: _isSubmitting
                   ? const SizedBox(
                       width: 18,

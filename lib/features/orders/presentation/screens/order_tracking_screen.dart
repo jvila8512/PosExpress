@@ -10,6 +10,7 @@ import 'package:etecsa/config/theme/widgets/ticket_card.dart';
 import 'package:etecsa/config/theme/widgets/order_timer.dart';
 import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
 import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 // ---------------------------------------------------------------------------
 // Redes Order Tracking Screen
@@ -29,8 +30,10 @@ class OrderTrackingScreen extends ConsumerStatefulWidget {
 }
 
 class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   Timer? _refreshTimer;
   bool _isInitialLoad = true;
+  final Set<String> _resendingIds = {};
 
   @override
   void initState() {
@@ -53,6 +56,35 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     if (mounted) {
       setState(() => _isInitialLoad = false);
     }
+  }
+
+  /// Reenvía el SMS PED de un pedido pendiente y avisa el resultado.
+  ///
+  /// El botón queda deshabilitado mientras el reenvío está en curso
+  /// ([_resendingIds]); al terminar se reconstruye la tarjeta para
+  /// reflejar el nuevo estado de [OrderNotifier.isSmsPending].
+  Future<void> _resendSms(RestaurantOrder order) async {
+    if (_resendingIds.contains(order.id)) return;
+    setState(() => _resendingIds.add(order.id));
+    bool ok = false;
+    try {
+      ok = await ref.read(orderProvider.notifier).resendSms(order.id);
+    } catch (_) {
+      ok = false;
+    } finally {
+      if (mounted) setState(() => _resendingIds.remove(order.id));
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'SMS reenviado — esperando confirmación'
+              : 'No se pudo enviar: configurá el número de Cocina',
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -88,7 +120,13 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     ];
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
         title: Text('Pedidos de Hoy (${orders.length})'),
         actions: [
           if (isLoading)
@@ -107,7 +145,15 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           ),
         ],
       ),
-      body: _buildBody(colors, theme, orders, grouped, groupOrder, isLoading, error),
+      body: _buildBody(
+        colors,
+        theme,
+        orders,
+        grouped,
+        groupOrder,
+        isLoading,
+        error,
+      ),
     );
   }
 
@@ -131,16 +177,24 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline,
-                  size: 64, color: colors.danger.withValues(alpha: 0.6)),
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: colors.danger.withValues(alpha: 0.6),
+              ),
               const SizedBox(height: 16),
-              Text('Error al cargar pedidos',
-                  style: theme.textTheme.titleMedium),
+              Text(
+                'Error al cargar pedidos',
+                style: theme.textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
-              Text(error,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.textSecondary),
-                  textAlign: TextAlign.center),
+              Text(
+                error,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: _loadOrders,
@@ -158,17 +212,26 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long_outlined,
-                size: 80, color: colors.textSecondary.withValues(alpha: 0.3)),
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 80,
+              color: colors.textSecondary.withValues(alpha: 0.3),
+            ),
             const SizedBox(height: 16),
-            Text('No hay pedidos hoy',
-                style: theme.textTheme.titleLarge?.copyWith(
-                    color: colors.textSecondary)),
+            Text(
+              'No hay pedidos hoy',
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Los pedidos nuevos aparecerán aquí automáticamente.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.textSecondary),
-                textAlign: TextAlign.center),
+            Text(
+              'Los pedidos nuevos aparecerán aquí automáticamente.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       );
@@ -181,8 +244,12 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
         children: [
           for (final groupName in groupOrder)
             if (grouped.containsKey(groupName)) ...[
-              _buildGroupHeader(colors, theme, groupName,
-                  grouped[groupName]!.length),
+              _buildGroupHeader(
+                colors,
+                theme,
+                groupName,
+                grouped[groupName]!.length,
+              ),
               ...grouped[groupName]!.map(
                 (order) => _buildOrderCard(order, colors, theme),
               ),
@@ -191,8 +258,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           // Grupos no listados en groupOrder
           for (final entry in grouped.entries)
             if (!groupOrder.contains(entry.key)) ...[
-              _buildGroupHeader(
-                  colors, theme, entry.key, entry.value.length),
+              _buildGroupHeader(colors, theme, entry.key, entry.value.length),
               ...entry.value.map(
                 (order) => _buildOrderCard(order, colors, theme),
               ),
@@ -249,11 +315,56 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     AppColorsTheme colors,
     ThemeData theme,
   ) {
+    final isSmsPending = ref
+        .read(orderProvider.notifier)
+        .isSmsPending(order.id);
+    final isResending = _resendingIds.contains(order.id);
     return TicketCard(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       padding: const EdgeInsets.all(14),
       header: _buildTicketHeader(order, colors, theme),
-      child: _buildTicketBody(order, colors, theme),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildTicketBody(order, colors, theme),
+          if (isSmsPending) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.warning.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'SMS pendiente',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.warning,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: isResending ? null : () => _resendSms(order),
+                  icon: isResending
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send, size: 18),
+                  label: const Text('Reenviar'),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -325,10 +436,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      item.code,
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                    child: Text(item.code, style: theme.textTheme.bodyMedium),
                   ),
                   Text(
                     '\$${(item.subtotal).toStringAsFixed(2)}',
@@ -367,9 +475,12 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
         ] else
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text('Sin items',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: colors.textSecondary)),
+            child: Text(
+              'Sin items',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
           ),
       ],
     );

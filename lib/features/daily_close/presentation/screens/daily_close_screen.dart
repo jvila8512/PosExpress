@@ -7,6 +7,7 @@ import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/core/database/app_database.dart' hide RestaurantOrder;
 import 'package:etecsa/features/orders/domain/entities/restaurant_order.dart';
 import 'package:etecsa/features/daily_close/presentation/providers/daily_close_provider.dart';
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 // ---------------------------------------------------------------------------
 // Admin Daily Close Screen
@@ -27,6 +28,7 @@ class DailyCloseScreen extends ConsumerStatefulWidget {
 
 class _DailyCloseScreenState extends ConsumerState<DailyCloseScreen>
     with SingleTickerProviderStateMixin {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
 
   @override
@@ -51,7 +53,13 @@ class _DailyCloseScreenState extends ConsumerState<DailyCloseScreen>
     final theme = Theme.of(context);
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
         title: Text('Resumen del Día'),
         actions: [
           if (state.isLoading)
@@ -255,6 +263,7 @@ class _ResumenTab extends StatelessWidget {
     final transferPct = state.totalSales > 0
         ? (state.transferSales / state.totalSales * 100).toStringAsFixed(0)
         : '0';
+    final diferenciaPct = state.unconfirmedPct.toStringAsFixed(0);
 
     return Card(
       child: Padding(
@@ -278,6 +287,13 @@ class _ResumenTab extends StatelessWidget {
               state.transferSales,
               '$transferPct%',
               colors.warning,
+            ),
+            const SizedBox(height: 8),
+            _breakdownRow(
+              'Diferencia',
+              state.diferencia,
+              '$diferenciaPct%',
+              state.diferencia == 0 ? colors.success : colors.warning,
             ),
           ],
         ),
@@ -565,7 +581,8 @@ class _ResumenTab extends StatelessWidget {
             ],
             _indicatorRow(
               'Pagos no confirmados',
-              '${state.ordersWithUnconfirmedPayment}',
+              '${state.ordersWithUnconfirmedPayment} '
+              '(${state.unconfirmedPct.toStringAsFixed(0)}%)',
               state.ordersWithUnconfirmedPayment > 0
                   ? colors.warning
                   : colors.success,

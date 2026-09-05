@@ -48,6 +48,9 @@ class RestaurantOrder {
   final DateTime? fechaCreacion;
   final List<OrderItem> items;
   final String? motivoCancelacion;
+  final bool smsEnviado;
+  final bool smsConfirmado;
+  final int intentosReenvio;
 
   const RestaurantOrder({
     required this.id,
@@ -63,6 +66,9 @@ class RestaurantOrder {
     this.fechaCreacion,
     this.items = const [],
     this.motivoCancelacion,
+    this.smsEnviado = false,
+    this.smsConfirmado = false,
+    this.intentosReenvio = 0,
   });
 
   /// Create from a JSON map (deserialized from API or storage).
@@ -86,6 +92,13 @@ class RestaurantOrder {
               .toList() ??
           [],
       motivoCancelacion: json['motivo_cancelacion']?.toString(),
+      smsEnviado: (json['sms_enviado'] ?? json['smsEnviado']) as bool? ?? false,
+      smsConfirmado:
+          (json['sms_confirmado'] ?? json['smsConfirmado']) as bool? ?? false,
+      intentosReenvio:
+          ((json['intentos_reenvio'] ?? json['intentosReenvio']) as num?)
+              ?.toInt() ??
+          0,
     );
   }
 
@@ -104,6 +117,9 @@ class RestaurantOrder {
     if (fechaCreacion != null) 'fecha_creacion': fechaCreacion!.toIso8601String(),
     'items': items.map((e) => e.toJson()).toList(),
     if (motivoCancelacion != null) 'motivo_cancelacion': motivoCancelacion,
+    'sms_enviado': smsEnviado,
+    'sms_confirmado': smsConfirmado,
+    'intentos_reenvio': intentosReenvio,
   };
 
   /// Create a copy with updated fields.
@@ -121,6 +137,9 @@ class RestaurantOrder {
     DateTime? fechaCreacion,
     List<OrderItem>? items,
     String? motivoCancelacion,
+    bool? smsEnviado,
+    bool? smsConfirmado,
+    int? intentosReenvio,
   }) {
     return RestaurantOrder(
       id: id ?? this.id,
@@ -136,6 +155,9 @@ class RestaurantOrder {
       fechaCreacion: fechaCreacion ?? this.fechaCreacion,
       items: items ?? this.items,
       motivoCancelacion: motivoCancelacion ?? this.motivoCancelacion,
+      smsEnviado: smsEnviado ?? this.smsEnviado,
+      smsConfirmado: smsConfirmado ?? this.smsConfirmado,
+      intentosReenvio: intentosReenvio ?? this.intentosReenvio,
     );
   }
 

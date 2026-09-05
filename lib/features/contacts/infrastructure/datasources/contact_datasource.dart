@@ -15,7 +15,7 @@ class ContactDatasource {
         rol: contact.rol,
         usuarioId: contact.usuarioId,
         numeroTelefono: contact.numeroTelefono,
-        activo: contact.activo,
+        activo: Value(contact.activo),
       ),
     );
   }
@@ -69,7 +69,7 @@ class ContactDatasource {
         .go();
   }
 
-  domain.TrustedContact _mapRow(TrustedContactRow row) {
+  domain.TrustedContact _mapRow(TrustedContact row) {
     return domain.TrustedContact(
       id: row.id,
       rol: row.rol,

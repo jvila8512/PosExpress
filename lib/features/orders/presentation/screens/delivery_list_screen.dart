@@ -13,6 +13,7 @@ import 'package:etecsa/features/orders/domain/entities/order_state.dart';
 import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
 import 'package:etecsa/features/clients/domain/entities/restaurant_client.dart';
 import 'package:etecsa/features/clients/presentation/providers/client_provider.dart';
+import 'package:etecsa/features/shared/widgets/side_menu.dart';
 
 // ---------------------------------------------------------------------------
 // Delivery List Screen — Pedidos para Entregar
@@ -37,6 +38,7 @@ class DeliveryListScreen extends ConsumerStatefulWidget {
 }
 
 class _DeliveryListScreenState extends ConsumerState<DeliveryListScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   Timer? _refreshTimer;
   bool _isInitialLoad = true;
   Map<String, RestaurantClient> _clientMap = {};
@@ -114,7 +116,13 @@ class _DeliveryListScreenState extends ConsumerState<DeliveryListScreen> {
       });
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: SideMenu(scaffoldKey: _scaffoldKey),
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
         title: Text('Domicilio (${deliveryOrders.length})'),
         actions: [
           if (isLoading)
