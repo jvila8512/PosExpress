@@ -83,4 +83,35 @@ void main() {
       expect(loginSrc.contains("'INICIAR SESIÓN'"), isTrue);
     });
   });
+
+  group('T3b — login screen without license widgets (R2/R7)', () {
+    late String loginSrc;
+
+    setUpAll(() {
+      loginSrc = source('lib/features/auth/presentation/screens/login_screen.dart');
+    });
+
+    test('login_screen.dart has zero license-domain residue', () {
+      expect(loginSrc.toLowerCase().contains('licen'), isFalse,
+          reason: 'R7: no license strings, fields or builders may survive');
+      expect(loginSrc.contains('_licenseInfo'), isFalse);
+      expect(loginSrc.contains('_checkingLicense'), isFalse);
+      expect(loginSrc.contains('_androidId'), isFalse);
+      expect(loginSrc.contains('_buildLicenseStatusCard'), isFalse);
+      expect(loginSrc.contains('_buildNoLicenseCard'), isFalse);
+      expect(loginSrc.contains('_buildActiveLicenseCard'), isFalse);
+      expect(loginSrc.contains('_buildExpiredLicenseCard'), isFalse);
+      expect(loginSrc.contains('_buildInvalidLicenseCard'), isFalse);
+      expect(loginSrc.contains('_buildAndroidIdChip'), isFalse);
+      expect(loginSrc.contains('AppDatabase'), isFalse);
+      expect(loginSrc.contains('Clipboard'), isFalse);
+    });
+
+    test('login_screen.dart keeps the form and its scaffolding', () {
+      expect(loginSrc.contains('Widget _buildLoginForm'), isTrue);
+      expect(loginSrc.contains('initState'), isTrue);
+      expect(loginSrc.contains('_obscurePassword'), isTrue);
+      expect(loginSrc.contains('class _LoginScreenState'), isTrue);
+    });
+  });
 }
