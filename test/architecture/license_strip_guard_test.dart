@@ -11,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// is not deleted along with the license code.
 void main() {
   String source(String path) => File(path).readAsStringSync();
+  int count(String haystack, String needle) =>
+      haystack.split(needle).length - 1;
 
   group('T2 — boot and auth without license gates (R2)', () {
     late String mainSrc;
@@ -160,6 +162,95 @@ void main() {
           reason: 'loader copy switches to the neutral startup text');
       expect(splashSrc.contains('createDefaultAdmin'), isTrue);
       expect(splashSrc.contains('createDefaultJefe'), isTrue);
+    });
+  });
+
+  group('T5 — couplings, side menu and sections without license (R5/R7/R9)', () {
+    late String menuSrc;
+    late String homeSrc;
+    late String settingsSrc;
+    late String helpSrc;
+    late String productsSrc;
+
+    setUpAll(() {
+      menuSrc = source('lib/features/shared/widgets/side_menu.dart');
+      homeSrc = source('lib/features/home/presentation/screens/home_screen.dart');
+      settingsSrc = source(
+        'lib/features/settings/presentation/screens/settings_screen.dart',
+      );
+      helpSrc = source('lib/features/help/presentation/screens/help_screen.dart');
+      productsSrc = source(
+        'lib/features/products/presentation/providers/products_provider.dart',
+      );
+    });
+
+    test('side menu lists exactly Usuarios and Configuracion for all roles', () {
+      expect(count(menuSrc, 'AppMenuItem(icon:'), 2,
+          reason: 'R5: one list, two navigation entries for every role');
+      expect(
+        menuSrc.contains(
+          "AppMenuItem(icon: Icons.people_alt, label: 'Usuarios', route: '/workers')",
+        ),
+        isTrue,
+      );
+      expect(
+        menuSrc.contains(
+          "AppMenuItem(icon: Icons.settings_outlined, label: 'Configuración', route: '/settings')",
+        ),
+        isTrue,
+      );
+      expect(menuSrc.contains("'Inicio'"), isFalse);
+      expect(menuSrc.contains('Nuevo Pedido'), isFalse,
+          reason: 'R5: Nuevo Pedido lives on the dashboard, not the menu');
+      expect(menuSrc.contains('Mi Licencia'), isFalse);
+      expect(menuSrc.contains('Gestión de Licencias'), isFalse);
+      expect(menuSrc.contains('Exportar/Importar'), isFalse);
+      expect(menuSrc.toLowerCase().contains('licen'), isFalse,
+          reason: 'R7: no license strings or comments in the menu');
+    });
+
+    test('side menu keeps the drawer chrome', () {
+      expect(menuSrc.contains('class SideMenu'), isTrue);
+      expect(menuSrc.contains('_currentMenuItems'), isTrue);
+      expect(menuSrc.contains('_roleTitle'), isTrue);
+      expect(menuSrc.contains('Cerrar sesión'), isTrue);
+      expect(menuSrc.contains('Hamburguesa Express'), isTrue);
+      expect(menuSrc.contains('_appVersion'), isTrue);
+    });
+
+    test('home dashboard keeps the Nuevo Pedido shortcut, drops the banner', () {
+      expect(homeSrc.contains('license_alerts_banner'), isFalse);
+      expect(homeSrc.contains('LicenseAlertsBanner'), isFalse);
+      expect(homeSrc.contains('Nuevo Pedido'), isTrue,
+          reason: 'R5: the dashboard action shortcut must survive');
+    });
+
+    test('settings keeps backup and drops license copy (R9)', () {
+      expect(settingsSrc.toLowerCase().contains('licen'), isFalse,
+          reason: 'R7: no license copy in the data-clear/backup sections');
+      expect(settingsSrc.contains('DatabaseBackupService'), isTrue,
+          reason: 'R9: backup/restore must stay intact');
+      expect(settingsSrc.contains('clearAllDataAdmin'), isTrue);
+    });
+
+    test('help keeps export sections and drops license sections (R9)', () {
+      expect(helpSrc.toLowerCase().contains('licen'), isFalse,
+          reason: 'R7: license sections and tips must be gone');
+      expect(helpSrc.contains('Exportaciones'), isTrue,
+          reason: 'R9: export help must stay');
+      expect(helpSrc.contains('📂 Exportaciones'), isTrue,
+          reason: 'R9: the export section itself must survive intact');
+      expect(helpSrc.contains('Contacto Soporte'), isTrue,
+          reason: 'non-license sections stay in place');
+    });
+
+    test('products provider has no plan-based product limits (R7)', () {
+      expect(productsSrc.contains('license_plan'), isFalse);
+      expect(productsSrc.toLowerCase().contains('licen'), isFalse);
+      expect(productsSrc.contains('canAddProduct'), isFalse,
+          reason: 'plan-limit check removed from create');
+      expect(productsSrc.contains('Future<void> addProduct('), isTrue);
+      expect(productsSrc.contains('Future<void> loadProducts()'), isTrue);
     });
   });
 }
