@@ -5,7 +5,6 @@ import 'package:etecsa/features/auth/infrastructure/errors/auth_errors.dart';
 import 'package:etecsa/features/auth/infrastructure/repositories/auth_repository_impl.dart';
 import 'package:etecsa/features/auth/infrastructure/datasources/auth_datasource_impl.dart';
 import 'package:etecsa/core/database/app_database.dart';
-import 'package:etecsa/core/security/license_service.dart';
 import 'package:etecsa/config/theme/theme_provider.dart';
 
 /// Provider para el datasource
@@ -35,25 +34,6 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(authStatus: AuthStatus.checking, errorMessage: '');
 
     try {
-      // VERIFICAR LICENCIA PRIMERO — sin licencia activa, nadie entra
-      final activatedLicense = await LicenseService.getActivatedLicenseCode();
-      if (activatedLicense == null || activatedLicense.isEmpty) {
-        _logout('Activa tu licencia primero');
-        return;
-      }
-
-      // Validar que la licencia sea vigente
-      final db = AppDatabase.instance;
-      final validation = await LicenseService.validateLicenseWithTamperProtection(db);
-      if (!validation.isValid) {
-        if (validation.isExpired) {
-          _logout('Licencia vencida. Renueva tu plan.');
-        } else {
-          _logout('Licencia inválida. Contacta a soporte.');
-        }
-        return;
-      }
-
       // Login normal
       try {
         final user = await _repository.login(username, password, rememberMe);
@@ -102,13 +82,6 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(authStatus: AuthStatus.checking, errorMessage: '');
 
     try {
-      // Verificar licencia antes de registrar
-      final activatedLicense = await LicenseService.getActivatedLicenseCode();
-      if (activatedLicense == null || activatedLicense.isEmpty) {
-        _logout('Activa tu licencia primero antes de crear cuentas');
-        return;
-      }
-
       final user = await _repository.register(username, password, fullName);
       state = state.copyWith(
         user: user,
