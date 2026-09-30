@@ -5,7 +5,6 @@ import 'package:uuid/uuid.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/database/database_provider.dart';
 
@@ -46,35 +45,6 @@ class ProductsNotifier extends Notifier<ProductsState> {
     }
   }
 
-  // Verificar límite de productos según plan de licencia
-  Future<Map<String, dynamic>> canAddProduct() async {
-    try {
-      const secureStorage = FlutterSecureStorage();
-      final planStr = await secureStorage.read(key: 'license_plan') ?? 'free';
-      final plan = await _database.getPlanByName(planStr.toUpperCase());
-
-      if (plan == null) {
-        // Si no hay plan, permitir (fallback)
-        return {'allowed': true, 'message': ''};
-      }
-
-      final currentCount = state.products.where((p) => !p.isDeleted).length;
-      final maxProducts = plan.maxProductos; // plan is non-null after check above
-
-      if (currentCount >= maxProducts) {
-        return {
-          'allowed': false,
-          'message': 'Límite alcanzado: $currentCount/${maxProducts} productos. Actualizá tu plan para agregar más.',
-        };
-      }
-
-      return {'allowed': true, 'message': '', 'current': currentCount, 'max': maxProducts};
-    } catch (e) {
-      debugPrint('Error checking product limit: $e');
-      return {'allowed': true, 'message': ''};
-    }
-  }
-
   Future<void> addProduct({
     required String name,
     required String code,
@@ -85,13 +55,6 @@ class ProductsNotifier extends Notifier<ProductsState> {
     String? categoryId,
     String? codigoCorto,
   }) async {
-    // Validar límite de productos según licencia
-    final canAdd = await canAddProduct();
-    if (!canAdd['allowed']) {
-      state = state.copyWith(isLoading: false, errorMessage: canAdd['message']);
-      return;
-    }
-
     state = state.copyWith(isLoading: true);
     try {
       await _database.into(_database.products).insert(
@@ -179,7 +142,7 @@ class ProductsNotifier extends Notifier<ProductsState> {
     }
   }
 
-  // Activar/desactivar producto para POS (licencias)
+  // Activar/desactivar producto para POS
   Future<void> toggleActive(String id, bool isActive) async {
     try {
       await (_database.update(_database.products)..where((p) => p.id.equals(id))).write(

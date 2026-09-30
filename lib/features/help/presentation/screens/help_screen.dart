@@ -1073,57 +1073,6 @@ Cada archivo tiene un menú (⋮) con estas opciones:
   List<Widget> _buildSuperAdminContent() {
     return [
       _buildSection(
-        title: '🔑 Licencias',
-        icon: Icons.vpn_key_outlined,
-        children: [
-          _buildCard(
-            title: 'Activar licencia',
-            content: '''
-• Al instalar la app por primera vez, se solicita una licencia
-• Ingresá el código de licencia proporcionado
-• La licencia se valida contra el servidor y se activa el plan correspondiente
-• Si la licencia es inválida o expiró, la app queda en modo restringido''',
-            icon: Icons.verified_user_outlined,
-          ),
-          const SizedBox(height: 12),
-          _buildCard(
-            title: 'Ver detalles del plan',
-            content: '''
-• Menú → Licencia para ver el plan activo y su estado
-• Muestra: tipo de plan, fecha de activación, fecha de vencimiento
-• También muestra los límites actuales y el uso (productos y vendedoras registrados)''',
-            icon: Icons.description_outlined,
-          ),
-          const SizedBox(height: 12),
-          _buildCard(
-            title: 'Planes disponibles',
-            content: '''
-• Plan FREE - \$0 - 15 días de prueba
-  - Máximo 100 productos, 1 vendedora
-  - Funcionalidad básica del POS
-
-• Plan NEGOCIO - \$3,000 - 31 días
-  - Máximo 100 productos, 1 vendedora
-  - Ideal para negocios pequeños en etapa inicial
-
-• Plan PRO - \$8,000 - 90 días
-  - Máximo 200 productos, 2 vendedoras
-  - Reportes completos y funcionalidad avanzada
-
-• Plan MAX - \$16,000 - 180 días
-  - Máximo 300 productos, 3 vendedoras
-  - Mayor capacidad para negocio en crecimiento
-
-• Plan MAXPRO - \$30,000 - 365 días
-  - Máximo 1.000 productos, 5 vendedoras
-  - Todo incluido, máxima capacidad''',
-            icon: Icons.list_alt_outlined,
-          ),
-        ],
-      ),
-      const SizedBox(height: 24),
-
-      _buildSection(
         title: '🛡️ Gestión de Administradores',
         icon: Icons.admin_panel_settings_outlined,
         children: [
@@ -1132,8 +1081,8 @@ Cada archivo tiene un menú (⋮) con estas opciones:
             content: '''
 • Como Super Admin, podés crear cuentas de administrador
 • Menú → Trabajadores → Botón (+) → Seleccionar rol "Admin"
-• El administrador tiene acceso completo a la app (excepto gestión de licencias)
-• Cada admin puede crear vendedoras dentro de los límites del plan''',
+• El administrador tiene acceso completo a la app
+• Cada admin puede crear vendedoras''',
             icon: Icons.person_add_outlined,
           ),
           const SizedBox(height: 12),
@@ -1206,7 +1155,7 @@ Cada archivo tiene un menú (⋮) con estas opciones:
             content: '''
 • Para cualquier problema técnico, contactá por WhatsApp
 • Enviá una captura de pantalla del error si es posible
-• Incluí el número de licencia y el nombre del negocio
+• Incluí el nombre del negocio
 • Horario de atención: lunes a viernes, 9:00 - 18:00''',
             icon: Icons.chat_outlined,
           ),
@@ -1219,16 +1168,7 @@ Cada archivo tiene un menú (⋮) con estas opciones:
         icon: Icons.lightbulb_outline,
         children: [
           _buildTipCard(
-            tip: 'Verificá el estado de la licencia antes de reportar problemas - muchas veces es un vencimiento del plan.',
-          ),
-          _buildTipCard(
             tip: 'Creá solo los administradores necesarios. Cada admin puede crear vendedoras y modificar el negocio.',
-          ),
-          _buildTipCard(
-            tip: 'Si un cliente alcanza el límite de productos o vendedoras, ofrecele la actualización de plan.',
-          ),
-          _buildTipCard(
-            tip: 'Mantené un registro de las licencias activas para dar seguimiento a los vencimientos.',
           ),
           _buildTipCard(
             tip: 'Al comprar en Inventario, esperá a que termine el proceso (spinner). El botón se bloquea solo para evitar compras duplicadas.',

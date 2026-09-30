@@ -454,7 +454,7 @@ ListTile(
     ListTile(
       leading: const Icon(Icons.delete_forever, color: Colors.red),
       title: const Text('Borrar todo y reiniciar', style: TextStyle(color: Colors.red)),
-      subtitle: const Text('Elimina todos los datos de negocio. Usuarios y licencias se conservan.'),
+      subtitle: const Text('Elimina todos los datos de negocio. Los usuarios se conservan.'),
       trailing: const Icon(Icons.chevron_right, color: Colors.red),
       onTap: () => _showBorrarTodoDialog(),
     ),
@@ -630,7 +630,7 @@ ListTile(
                   const Text('• Configuraciones de la app'),
                   const SizedBox(height: 12),
                   const Text(
-                    'Se conservan: usuarios, licencias y planes de licencia.',
+                    'Se conservan: usuarios.',
                     style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
@@ -677,7 +677,7 @@ ListTile(
         final db = AppDatabase.instance;
         await db.clearAllDataAdmin();
         if (mounted) {
-          _showSnackBar('Todos los datos fueron eliminados. Usuarios y licencias se conservaron.');
+          _showSnackBar('Todos los datos fueron eliminados. Los usuarios se conservaron.');
         }
       } catch (e) {
         if (mounted) {

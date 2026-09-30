@@ -5,7 +5,6 @@ import 'package:etecsa/features/shared/widgets/side_menu.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/features/orders/domain/entities/order_state.dart';
 import 'package:etecsa/features/orders/presentation/providers/order_provider.dart';
-import 'package:etecsa/features/license/presentation/widgets/license_alerts_banner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -523,10 +522,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // License Alerts
-          const LicenseAlertsBanner(),
-          const SizedBox(height: 16),
-
           // Nuevo Pedido shortcut (admin)
           _buildActionButton(
             icon: Icons.add_circle_outline,

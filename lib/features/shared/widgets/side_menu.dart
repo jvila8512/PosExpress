@@ -36,76 +36,13 @@ class _SideMenuState extends State<SideMenu> {
   String _appVersion = '';
   int _selectedIndex = 0;
 
-  // ── REDES menu ─────────────────────────────────────────────────
-  final List<AppMenuItem> _redesMenuItems = [
-    const AppMenuItem(icon: Icons.home, label: 'Inicio', route: '/'),
-    const AppMenuItem(icon: Icons.add_circle_outline, label: 'Nuevo Pedido', route: '/orders/new'),
-    const AppMenuItem(icon: Icons.list_alt, label: 'Seguimiento', route: '/orders/tracking'),
-    const AppMenuItem(icon: Icons.history, label: 'Historial', route: '/orders/history'),
-    const AppMenuItem(icon: Icons.people_outline, label: 'Clientes', route: '/clients'),
-    const AppMenuItem(icon: Icons.contact_phone_outlined, label: 'Contactos Confianza', route: '/contacts'),
-    const AppMenuItem(icon: Icons.settings_outlined, label: 'Configuración', route: '/settings'),
-  ];
-
-  // ── COCINA menu ────────────────────────────────────────────────
-  final List<AppMenuItem> _cocinaMenuItems = [
-    const AppMenuItem(icon: Icons.home, label: 'Inicio', route: '/'),
-    const AppMenuItem(icon: Icons.view_column, label: 'Cola de Cocina', route: '/kitchen'),
-    const AppMenuItem(icon: Icons.contact_phone_outlined, label: 'Contactos Confianza', route: '/contacts'),
-    const AppMenuItem(icon: Icons.settings_outlined, label: 'Configuración', route: '/settings'),
-  ];
-
-  // ── DOMICILIO menu ─────────────────────────────────────────────
-  final List<AppMenuItem> _domicilioMenuItems = [
-    const AppMenuItem(icon: Icons.home, label: 'Inicio', route: '/'),
-    const AppMenuItem(icon: Icons.delivery_dining, label: 'Entregas', route: '/delivery'),
-    const AppMenuItem(icon: Icons.contact_phone_outlined, label: 'Contactos Confianza', route: '/contacts'),
-    const AppMenuItem(icon: Icons.settings_outlined, label: 'Configuración', route: '/settings'),
-  ];
-
-  // ── ADMIN menu ─────────────────────────────────────────────────
-  final List<AppMenuItem> _adminMenuItems = [
-    const AppMenuItem(icon: Icons.home, label: 'Inicio', route: '/'),
-    const AppMenuItem(icon: Icons.add_circle_outline, label: 'Nuevo Pedido', route: '/orders/new'),
+  // ── Menú único para todos los roles (spec R5) ─────────────────
+  final List<AppMenuItem> _menuItems = [
     const AppMenuItem(icon: Icons.people_alt, label: 'Usuarios', route: '/workers'),
-    const AppMenuItem(icon: Icons.inventory_2_outlined, label: 'Productos', route: '/products'),
-    const AppMenuItem(icon: Icons.category_outlined, label: 'Categorías', route: '/categories'),
-    const AppMenuItem(icon: Icons.account_balance, label: 'Cierre del Día', route: '/daily-close'),
-    const AppMenuItem(icon: Icons.people_outline, label: 'Clientes', route: '/clients'),
-    const AppMenuItem(icon: Icons.contact_phone_outlined, label: 'Contactos Confianza', route: '/contacts'),
-    const AppMenuItem(icon: Icons.receipt_long_outlined, label: 'Gastos', route: '/expenses'),
     const AppMenuItem(icon: Icons.settings_outlined, label: 'Configuración', route: '/settings'),
-    const AppMenuItem(icon: Icons.help_outline, label: 'Ayuda', route: '/help'),
-    const AppMenuItem(icon: Icons.key, label: 'Mi Licencia', route: '/my-license'),
-    const AppMenuItem(icon: Icons.file_upload_outlined, label: 'Exportar/Importar', route: '/exports'),
   ];
 
-  // ── SUPER ADMIN menu (extends admin + licenses) ────────────────
-  final List<AppMenuItem> _superAdminMenuItems = [
-    const AppMenuItem(icon: Icons.home, label: 'Inicio', route: '/'),
-    const AppMenuItem(icon: Icons.add_circle_outline, label: 'Nuevo Pedido', route: '/orders/new'),
-    const AppMenuItem(icon: Icons.people_alt, label: 'Usuarios', route: '/workers'),
-    const AppMenuItem(icon: Icons.inventory_2_outlined, label: 'Productos', route: '/products'),
-    const AppMenuItem(icon: Icons.category_outlined, label: 'Categorías', route: '/categories'),
-    const AppMenuItem(icon: Icons.account_balance, label: 'Cierre del Día', route: '/daily-close'),
-    const AppMenuItem(icon: Icons.people_outline, label: 'Clientes', route: '/clients'),
-    const AppMenuItem(icon: Icons.contact_phone_outlined, label: 'Contactos Confianza', route: '/contacts'),
-    const AppMenuItem(icon: Icons.receipt_long_outlined, label: 'Gastos', route: '/expenses'),
-    const AppMenuItem(icon: Icons.settings_outlined, label: 'Configuración', route: '/settings'),
-    const AppMenuItem(icon: Icons.help_outline, label: 'Ayuda', route: '/help'),
-    const AppMenuItem(icon: Icons.key, label: 'Mi Licencia', route: '/my-license'),
-    const AppMenuItem(icon: Icons.admin_panel_settings, label: 'Gestión de Licencias', route: '/licenses'),
-    const AppMenuItem(icon: Icons.file_upload_outlined, label: 'Exportar/Importar', route: '/exports'),
-  ];
-
-  List<AppMenuItem> get _currentMenuItems {
-    if (_userRole == 'super_admin') return _superAdminMenuItems;
-    if (_userRole == 'admin') return _adminMenuItems;
-    if (_userRole == 'redes' || _userRole == 'vendedor') return _redesMenuItems;
-    if (_userRole == 'cocina') return _cocinaMenuItems;
-    if (_userRole == 'domicilio') return _domicilioMenuItems;
-    return _adminMenuItems;
-  }
+  List<AppMenuItem> get _currentMenuItems => _menuItems;
 
   @override
   void initState() {
