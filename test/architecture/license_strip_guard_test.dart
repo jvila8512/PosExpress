@@ -57,4 +57,30 @@ void main() {
       expect(authSrc.contains('class AuthState'), isTrue);
     });
   });
+
+  group('T3a — login screen without license lookup logic (R2)', () {
+    late String loginSrc;
+
+    setUpAll(() {
+      loginSrc = source('lib/features/auth/presentation/screens/login_screen.dart');
+    });
+
+    test('login_screen.dart has no license lookup logic', () {
+      expect(loginSrc.contains('core/security/license_service.dart'), isFalse,
+          reason: 'license service import must be gone from the login screen');
+      expect(loginSrc.contains('_loadLicenseInfo'), isFalse);
+      expect(loginSrc.contains('_loadAndroidId'), isFalse);
+      expect(loginSrc.contains('LicenseService.'), isFalse);
+      expect(loginSrc.contains('getDeviceFingerprint'), isFalse);
+      expect(loginSrc.contains('getActivatedLicenseCode'), isFalse);
+      expect(loginSrc.contains('validateLicenseWithTamperProtection'), isFalse);
+    });
+
+    test('login_screen.dart keeps the login form wiring', () {
+      expect(loginSrc.contains('Widget _buildLoginForm'), isTrue);
+      expect(loginSrc.contains('loginFormProvider'), isTrue);
+      expect(loginSrc.contains('authProvider.notifier'), isTrue);
+      expect(loginSrc.contains("'INICIAR SESIÓN'"), isTrue);
+    });
+  });
 }

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:etecsa/features/auth/presentation/providers/auth_provider.dart';
 import 'package:etecsa/features/auth/presentation/providers/login_form_provider.dart';
 import 'package:etecsa/config/theme/app_colors.dart';
-import 'package:etecsa/core/security/license_service.dart';
 import 'package:etecsa/core/database/app_database.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -25,79 +24,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _loadLicenseInfo();
-    _loadAndroidId();
-  }
-
-  Future<void> _loadAndroidId() async {
-    try {
-      final id = await LicenseService.getDeviceFingerprint();
-      if (mounted) {
-        setState(() {
-          _androidId = id;
-        });
-      }
-    } catch (e) {
-      // Fingerprint no es crítico en login: si falla, no mostramos el chip.
-      debugPrint('Error loading android id: $e');
-    }
-  }
-
-  Future<void> _loadLicenseInfo() async {
-    try {
-      final activatedLicense = await LicenseService.getActivatedLicenseCode();
-
-      if (activatedLicense != null && activatedLicense.isNotEmpty) {
-        final db = AppDatabase.instance;
-        final validationResult = await LicenseService.validateLicenseWithTamperProtection(db);
-
-        if (validationResult.isValid) {
-          setState(() {
-            _licenseInfo = {
-              'status': 'active',
-              'plan': validationResult.planName,
-              'expiresAt': validationResult.expiresAt,
-              'remainingDays': validationResult.remainingDays,
-            };
-          });
-        } else if (validationResult.isExpired) {
-          setState(() {
-            _licenseInfo = {
-              'status': 'expired',
-              'plan': validationResult.planName,
-              'expiresAt': validationResult.expiredDate,
-              'remainingDays': 0,
-            };
-          });
-        } else {
-          setState(() {
-            _licenseInfo = {
-              'status': 'invalid',
-              'plan': 'UNKNOWN',
-              'message': validationResult.errorMessage,
-            };
-          });
-        }
-      } else {
-        setState(() {
-          _licenseInfo = {
-            'status': 'none',
-          };
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading license info: $e');
-      setState(() {
-        _licenseInfo = {
-          'status': 'error',
-          'message': e.toString(),
-        };
-      });
-    }
-
-    setState(() {
-      _checkingLicense = false;
-    });
   }
 
   @override
@@ -127,10 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
-          if (_checkingLicense)
-            const LinearProgressIndicator()
-          else
-            _buildLicenseStatusCard(),
           const SizedBox(height: 20),
           _buildLoginForm(context, isTablet: false),
         ],
@@ -157,7 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                if (!_checkingLicense) _buildLicenseStatusCard(),
               ],
             ),
           ),
