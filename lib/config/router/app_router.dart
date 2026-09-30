@@ -4,7 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:etecsa/features/auth/presentation/screens/login_screen.dart';
 import 'package:etecsa/features/auth/presentation/screens/register_screen.dart';
-import 'package:etecsa/features/auth/presentation/screens/activation_screen.dart';
 import 'package:etecsa/features/shared/presentation/screens/splash_screen.dart';
 import 'package:etecsa/features/products/presentation/screens/products_screen.dart';
 import 'package:etecsa/features/products/presentation/screens/categories_screen.dart';
@@ -15,14 +14,6 @@ import 'package:etecsa/features/expenses/presentation/screens/expenses_screen.da
 import 'package:etecsa/features/home/presentation/screens/home_screen.dart';
 import 'package:etecsa/features/settings/presentation/screens/settings_screen.dart';
 import 'package:etecsa/features/help/presentation/screens/help_screen.dart';
-import 'package:etecsa/features/auth/presentation/screens/licenses_admin_screen.dart';
-import 'package:etecsa/features/license/presentation/screens/licenses_dashboard_screen.dart';
-import 'package:etecsa/features/license/presentation/screens/clientes_screen.dart';
-import 'package:etecsa/features/license/presentation/screens/plan_pricing_screen.dart';
-import 'package:etecsa/features/license/presentation/screens/license_detail_screen.dart';
-import 'package:etecsa/features/license/presentation/screens/my_license_screen.dart';
-import 'package:etecsa/features/license/presentation/screens/all_licenses_screen.dart';
-import 'package:etecsa/features/license/presentation/screens/license_expired_screen.dart';
 import 'package:etecsa/features/orders/presentation/screens/order_form_screen.dart';
 import 'package:etecsa/features/orders/presentation/screens/order_tracking_screen.dart';
 import 'package:etecsa/features/orders/presentation/screens/order_history_screen.dart';
@@ -40,11 +31,6 @@ const _secureStorage = FlutterSecureStorage();
 Future<bool> _isLoggedIn() async {
   final token = await _secureStorage.read(key: 'session_token');
   return token != null && token.isNotEmpty;
-}
-
-Future<bool> _isSuperAdmin() async {
-  final role = await _secureStorage.read(key: 'user_role');
-  return role == 'super_admin';
 }
 
 /// Guard de ruta `/workers` (navegación directa): puro y testeable.
@@ -83,68 +69,12 @@ final appRouter = GoRouter(
       builder: (context, state) => const SplashScreen(),
     ),
     GoRoute(
-      path: '/activation',
-      builder: (context, state) => const ActivationScreen(),
-    ),
-    GoRoute(
-      path: '/license-expired',
-      builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-        return LicenseExpiredScreen(
-          expiredDate: extra?['expiredDate'] as DateTime?,
-          daysElapsed: extra?['daysElapsed'] as int?,
-          durationDays: extra?['durationDays'] as int?,
-        );
-      },
-    ),
-    GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
-    ),
-    GoRoute(
-      path: '/my-license',
-      builder: (context, state) => const MyLicenseScreen(),
-    ),
-    GoRoute(
-      path: '/licenses',
-      builder: (context, state) {
-        return const LicensesDashboardScreen();
-      },
-    ),
-    GoRoute(
-      path: '/licenses/all',
-      builder: (context, state) {
-        return const AllLicensesScreen();
-      },
-    ),
-    GoRoute(
-      path: '/licenses/clientes',
-      builder: (context, state) {
-        return const ClientesScreen();
-      },
-    ),
-    GoRoute(
-      path: '/licenses/planes',
-      builder: (context, state) {
-        return const PlanPricingScreen();
-      },
-    ),
-    GoRoute(
-      path: '/licenses/detail/:id',
-      builder: (context, state) {
-        final licenseId = state.pathParameters['id']!;
-        return LicenseDetailScreen(licenseId: licenseId);
-      },
-    ),
-    GoRoute(
-      path: '/licenses/new',
-      builder: (context, state) {
-        return const LicensesAdminScreen(showCreateDialog: true);
-      },
     ),
 
     // ── Home ─────────────────────────────────────────────────────
@@ -269,7 +199,6 @@ final appRouter = GoRouter(
 
     // Rutas públicas que no requieren auth
     if (currentPath == '/splash' ||
-        currentPath == '/activation' ||
         currentPath == '/login' ||
         currentPath == '/register') {
       return null;
@@ -279,14 +208,6 @@ final appRouter = GoRouter(
     final isRegistering = currentPath == '/register';
     final isFirst = await _isFirstTime();
     final loggedIn = await _isLoggedIn();
-
-    // Verificar acceso a rutas de licencias (solo super_admin)
-    if (currentPath == '/licenses' && loggedIn) {
-      final isSuperAdmin = await _isSuperAdmin();
-      if (!isSuperAdmin) {
-        return '/';
-      }
-    }
 
     // Verificar acceso a /workers (solo admin y super_admin)
     final role = await _secureStorage.read(key: 'user_role') ?? '';
