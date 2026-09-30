@@ -64,11 +64,7 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
   bool _isLoading = true;
   String _currentRole = '';
   String _currentUserId = '';
-  int _maxVendedores = 1; // default FREE plan limit
-  int _currentVendedorCount = 0;
-
   bool get _isSuperAdmin => _currentRole == 'super_admin';
-  bool get _canAddVendedor => _currentVendedorCount < _maxVendedores;
   bool get _canAddAdmin => _isSuperAdmin;
 
   @override
@@ -100,54 +96,12 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
       } else {
         _users = [];
       }
-
-      // 4. Count sales-facing users (redes / legacy vendedor) for plan limit
-      _currentVendedorCount = _users.where((u) => u.role == 'redes' || u.role == 'vendedor').length;
-
-      // 5. Get maxVendedores from license plan
-      await _loadMaxVendedores();
     } catch (e) {
       print('Error loading users: $e');
       _users = [];
     }
 
     setState(() => _isLoading = false);
-  }
-
-  Future<void> _loadMaxVendedores() async {
-    try {
-      final db = AppDatabase.instance;
-      final planStr = await _secureStorage.read(key: 'license_plan') ?? 'free';
-
-      // Map SecureStorage plan name to DB plan name (case-insensitive)
-      final planName = planStr.toUpperCase();
-      final plan = await db.getPlanByName(planName);
-
-      if (plan != null) {
-        _maxVendedores = plan.maxVendedores;
-      } else {
-        // Fallback defaults (solo si el plan no se encontró en DB)
-        switch (planName) {
-          case 'PRO':
-            _maxVendedores = 5;
-            break;
-          case 'NEGOCIO':
-            _maxVendedores = 50;
-            break;
-          case 'MAX':
-            _maxVendedores = 100;
-            break;
-          case 'MAXPRO':
-            _maxVendedores = 999;
-            break;
-          default:
-            _maxVendedores = 1; // FREE
-        }
-      }
-    } catch (e) {
-      print('Error loading license plan: $e');
-      _maxVendedores = 1; // safe fallback
-    }
   }
 
   @override
@@ -247,16 +201,6 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const Spacer(),
-                  if (!_isSuperAdmin)
-                    Text(
-                      'Cupo Redes: $_currentVendedorCount/$_maxVendedores',
-                      style: TextStyle(
-                        color: _canAddVendedor ? Colors.grey.shade600 : Colors.orange.shade700,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
                 ],
               ),
             );
@@ -423,14 +367,6 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                     'Elegí el rol del negocio (Admin, Redes, Cocina, Mesero, Domicilio).',
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                   ),
-                ] else ...[
-                  Text(
-                    'Cupo de Redes: $_currentVendedorCount/$_maxVendedores de tu plan.',
-                    style: TextStyle(
-                      color: _canAddVendedor ? Colors.grey.shade600 : Colors.orange.shade700,
-                      fontSize: 12,
-                    ),
-                  ),
                 ],
                 const SizedBox(height: 16),
                 TextField(
@@ -489,20 +425,6 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
                     passController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Completa todos los campos')),
-                  );
-                  return;
-                }
-
-                // Check sales (redes) limit when creating a redes user
-                final isSalesRole = selectedRole == 'redes' || selectedRole == 'vendedor';
-                if (isSalesRole && !_canAddVendedor) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Alcanzaste el cupo de ${_maxVendedores} usuarios de Redes de tu plan',
-                      ),
-                      backgroundColor: Colors.orange,
-                    ),
                   );
                   return;
                 }
