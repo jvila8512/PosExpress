@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Source-level guards for `adaptar-prd-hamburguezas`.
 ///
 /// The license domain is stripped work-unit by work-unit. Each group pins
-/// one work unit's end state (spec R1–R3, R7) so a later refactor cannot
+/// one work unit's end state (spec R1–R3, R6–R8) so a later refactor cannot
 /// resurrect license gates in the boot, auth, login or splash paths, and so
 /// the preserved scaffolding (SMS receiver, theme seeding, fail-open fence)
 /// is not deleted along with the license code.
@@ -251,6 +251,74 @@ void main() {
           reason: 'plan-limit check removed from create');
       expect(productsSrc.contains('Future<void> addProduct('), isTrue);
       expect(productsSrc.contains('Future<void> loadProducts()'), isTrue);
+    });
+  });
+
+  group('T6 — dead license and analysis files removed (R8)', () {
+    const deadPaths = <String>[
+      'lib/features/license',
+      'lib/features/auth/presentation/screens/activation_screen.dart',
+      'lib/features/auth/presentation/screens/licenses_admin_screen.dart',
+      'lib/features/reports',
+      'lib/features/shared/presentation/screens/exports_screen.dart',
+      'lib/features/auth/presentation/screens/login_screen_etecsa.dart',
+      'lib/features/auth/infrastructure/mappers/user_mapper copy.dart',
+    ];
+
+    test('every dead path listed by R8 is gone', () {
+      for (final path in deadPaths) {
+        expect(
+          FileSystemEntity.typeSync(path, followLinks: false),
+          FileSystemEntityType.notFound,
+          reason: 'R8: $path must be deleted',
+        );
+      }
+    });
+
+    test('license service and its fingerprint test survive until T7c', () {
+      expect(
+        File('lib/core/security/license_service.dart').existsSync(),
+        isTrue,
+        reason: 'app_database.dart still imports it until T7c',
+      );
+      expect(
+        File('test/core/security/license_service_fingerprint_test.dart')
+            .existsSync(),
+        isTrue,
+        reason: 'deleted together with the service in T7c',
+      );
+    });
+
+    test('no surviving source references a deleted path', () {
+      const needles = <String>[
+        'features/license/',
+        'licenses_admin_screen',
+        'activation_screen',
+        'features/reports/',
+        'exports_screen',
+        'login_screen_etecsa',
+        'user_mapper copy',
+      ];
+      final offenders = <String>[];
+      for (final root in ['lib', 'test']) {
+        final dartFiles = Directory(root)
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'));
+        for (final file in dartFiles) {
+          // This guard file names the deleted paths on purpose.
+          if (file.path.endsWith('license_strip_guard_test.dart')) continue;
+          final content = file.readAsStringSync();
+          for (final needle in needles) {
+            if (content.contains(needle)) {
+              offenders.add('${file.path} → "$needle"');
+            }
+          }
+        }
+      }
+      expect(offenders, isEmpty,
+          reason: 'R8: surviving importers must be fixed, not left '
+              'dangling: $offenders');
     });
   });
 }
