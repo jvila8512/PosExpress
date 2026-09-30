@@ -321,4 +321,84 @@ void main() {
               'dangling: $offenders');
     });
   });
+
+  group('T7a — license and plan DAO blocks purged (R6/R7)', () {
+    late String dbSrc;
+    late String workersSrc;
+
+    setUpAll(() {
+      dbSrc = source('lib/core/database/app_database.dart');
+      workersSrc = source(
+        'lib/features/workers/presentation/screens/workers_screen.dart',
+      );
+    });
+
+    test('license and plan DAO methods are gone from app_database.dart', () {
+      const gone = <String>[
+        'getAllLicenses(',
+        'getActiveLicensesCount',
+        'createLicense({',
+        'getAllLicensePlanes',
+        'getPlanByName',
+        'createLicensePlan',
+        'updateLicensePlan',
+        'deleteLicensePlan',
+        'initDefaultPlans',
+        'LicensePlanesCompanion',
+      ];
+      for (final needle in gone) {
+        expect(dbSrc.contains(needle), isFalse,
+            reason: 'R6: "$needle" belongs to the purged DAO block 1');
+      }
+      final purgedBanners = dbSrc
+          .split('\n')
+          .map((l) => l.trim())
+          .where((l) =>
+              l == '// MÉTODOS DE LICENCIAS' ||
+              l == '// MÉTODOS DE PLANES DE LICENCIAS')
+          .toList();
+      expect(purgedBanners, isEmpty,
+          reason: 'R6: both DAO section banners must be deleted');
+    });
+
+    test('T7a deletes only block 1: neighbouring DAO sections survive', () {
+      expect(dbSrc.contains('getActiveClientes'), isTrue,
+          reason: 'section before block 1 must stay intact');
+      expect(dbSrc.contains('clearAllDataAdmin'), isTrue,
+          reason: 'data-clear must survive between the license blocks');
+      expect(dbSrc.contains('setAllStockTo10000'), isTrue,
+          reason: 'stock reset must survive between the license blocks');
+      expect(dbSrc.contains('/// Borrar todo y reiniciar'), isTrue,
+          reason: 'clearAllDataAdmin doc comment must not be clipped');
+      expect(dbSrc.contains('// MÉTODOS DEL HOME DASHBOARD'), isTrue,
+          reason: 'dashboard section (T7b boundary) must stay until T7b');
+    });
+
+    test('workers screen has no plan-limit enforcement (R4)', () {
+      expect(workersSrc.contains('getPlanByName'), isFalse,
+          reason: 'plan DAO is purged in T7a');
+      expect(workersSrc.contains('_loadMaxVendedores'), isFalse,
+          reason: 'the plan lookup cannot survive without the DAO');
+      expect(workersSrc.contains('_maxVendedores'), isFalse,
+          reason: 'no plan-derived cap remains (spec R4)');
+      expect(workersSrc.contains('_canAddVendedor'), isFalse,
+          reason: 'no cap gate remains (spec R4)');
+      expect(workersSrc.contains('license_plan'), isFalse,
+          reason: 'secure-storage plan key belongs to the license domain');
+      expect(workersSrc.contains('Cupo'), isFalse,
+          reason: 'the cupo UI was license-plan derived (spec R4)');
+    });
+
+    test('license creation script whose only job was createLicense is gone',
+        () {
+      expect(
+        FileSystemEntity.typeSync(
+          'bin/create_test_license.dart',
+          followLinks: false,
+        ),
+        FileSystemEntityType.notFound,
+        reason: 'it called db.createLicense, which no longer exists',
+      );
+    });
+  });
 }
