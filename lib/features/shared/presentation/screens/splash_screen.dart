@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:etecsa/config/theme/app_colors.dart';
 import 'package:etecsa/config/theme/theme_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:etecsa/core/security/license_service.dart';
 import 'package:etecsa/core/database/app_database.dart';
 import 'package:etecsa/core/services/database_backup_service.dart';
 import 'package:etecsa/core/services/export_service.dart';
@@ -21,9 +20,9 @@ const _startupTimeout = Duration(seconds: 10);
 const _fallbackUsersTimeout = Duration(seconds: 2);
 
 /// Timeout por paso de la decisión de ruta: si un await de la secuencia
-/// (users-query / license-read / license-validate / fingerprint /
-/// session-read) se cuelga, este fence lo corta y hace fail-open a
-/// login/register en vez de dejar el splash colgado para siempre.
+/// (users-query / session-read / role-read) se cuelga, este fence lo corta
+/// y hace fail-open a login/register en vez de dejar el splash colgado
+/// para siempre.
 /// Constante nombrada (rollback flag), igual que el fence de arranque.
 const _routeStepTimeout = Duration(seconds: 10);
 
@@ -83,9 +82,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   /// Cadena de arranque real: pasos aislados + fence de 10s (spec R1/R2).
-  /// El último paso resuelve la decisión de ruta a partir de datos ya
-  /// capturados; las side-effects (revocar licencia, tema por rol) se
-  /// aplican después, fuera del fence, en [_applyDecision].
+  /// Los pasos solo preparan datos base (DB, backups, exports); la decisión
+  /// de ruta se toma después, fuera del fence, en [_decideRoute].
   List<StartupStep> _buildStartupSteps() => [
     (
       name: 'db-init',
@@ -93,7 +91,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         final db = AppDatabase.instance;
         await db.createDefaultAdmin();
         await db.createDefaultJefe();
-        await db.initDefaultPlans();
       },
     ),
     (
@@ -112,8 +109,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _decideRoute() async {
     try {
-      debugPrint('[splash] === CHECK - LICENSE FLOW ===');
-
       final db = AppDatabase.instance;
 
       // 1. Usuarios existentes
@@ -128,87 +123,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         return;
       }
 
-      // 2. Licencia activada en secure_storage
-      final activatedLicense = await _boundedRouteStep(
-        'license-read',
-        LicenseService.getActivatedLicenseCode(),
-      );
-      if (!mounted) return;
-      if (activatedLicense == null || activatedLicense.isEmpty) {
-        debugPrint('[splash] Va a Login (sin licencia activada)');
-        context.go('/login');
-        return;
-      }
-
-      // 3. Validación con protección anti-manipulación
-      final validationResult = await _boundedRouteStep(
-        'license-validate',
-        LicenseService.validateLicenseWithTamperProtection(db),
-      );
-      if (!mounted) return;
-
-      // 4. Licencia vencida -> pantalla dedicada
-      if (validationResult.isExpired) {
-        debugPrint('[splash] Va a LicenseExpiredScreen');
-        context.go(
-          '/license-expired',
-          extra: {
-            'expiredDate': validationResult.expiredDate,
-            'daysElapsed': validationResult.daysElapsed,
-            'durationDays': validationResult.durationDays,
-          },
-        );
-        return;
-      }
-
-      // 5. Licencia inválida (otro error) -> login (desde ahí puede activar)
-      if (!validationResult.isValid) {
-        debugPrint(
-          '[splash] Licencia inválida: ${validationResult.errorMessage}',
-        );
-        context.go('/login');
-        return;
-      }
-
-      // 6. Verificar vínculo Android ID (no-fatal, 3s máximo interno)
-      final deviceAndroidId = await _boundedRouteStep(
-        'fingerprint',
-        LicenseService.getDeviceFingerprintOrNull(),
-      );
-      if (!mounted) return;
-
-      if (deviceAndroidId != null) {
-        final licenseParts = activatedLicense.split('-');
-        final deviceIdFromLicense = licenseParts.length > 6
-            ? licenseParts.sublist(5, licenseParts.length - 1).join('-')
-            : (licenseParts.length > 5 ? licenseParts[5] : '');
-        if (deviceIdFromLicense.isNotEmpty && deviceIdFromLicense != 'DEV') {
-          if (deviceIdFromLicense != deviceAndroidId) {
-            debugPrint(
-              '[splash] Android ID mismatch! Licencia vinculada a '
-              '$deviceIdFromLicense, dispositivo actual: $deviceAndroidId',
-            );
-            // Revocar licencia — fue generada para otro dispositivo
-            await _boundedRouteStep('license-revoke', () async {
-              await _secureStorage.delete(key: 'activated_license');
-              await _secureStorage.delete(key: 'license_key');
-            }());
-            if (mounted) {
-              context.go('/login');
-            }
-            return;
-          }
-          debugPrint(
-            '[splash] Android ID verificado: coincide con la licencia',
-          );
-        }
-      } else {
-        debugPrint(
-          '[splash] Huella no disponible: se omite la verificación de vínculo',
-        );
-      }
-
-      // 7. Sesión activa (< 24h)
+      // 2. Sesión activa (< 24h)
       final (sessionToken, sessionTime) = await _boundedRouteStep(
         'session-read',
         () async {
@@ -231,7 +146,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       debugPrint('[splash] Session activa: $sessionActive');
 
-      // 8. Sesión activa -> Home (con tema por rol antes del primer frame)
+      // 3. Sesión activa -> Home (con tema por rol antes del primer frame)
       if (sessionActive) {
         final savedRole =
             (await _boundedRouteStep(
@@ -248,7 +163,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         return;
       }
 
-      // 9. Sin sesión activa -> Login
+      // 4. Sin sesión activa -> Login
       debugPrint('[splash] Va a Login (sin sesión activa)');
       context.go('/login');
     } catch (e) {
@@ -352,7 +267,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             const CircularProgressIndicator(color: Colors.white),
             const SizedBox(height: 24),
             const Text(
-              'Verificando licencia...',
+              'Iniciando...',
               style: TextStyle(fontSize: 14, color: Colors.white70),
             ),
           ],

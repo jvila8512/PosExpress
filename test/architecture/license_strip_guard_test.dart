@@ -114,4 +114,52 @@ void main() {
       expect(loginSrc.contains('class _LoginScreenState'), isTrue);
     });
   });
+
+  group('T4 — splash route decision without license steps (R1)', () {
+    late String splashSrc;
+
+    setUpAll(() {
+      splashSrc = source(
+        'lib/features/shared/presentation/screens/splash_screen.dart',
+      );
+    });
+
+    test('splash_screen.dart has no license steps in the route decision', () {
+      expect(splashSrc.contains('core/security/license_service.dart'), isFalse,
+          reason: 'license service import must be gone from the splash');
+      expect(splashSrc.contains('initDefaultPlans'), isFalse,
+          reason: 'plan seeding is license-domain and must not run at boot');
+      expect(splashSrc.contains('CHECK - LICENSE FLOW'), isFalse);
+      expect(splashSrc.contains('license-read'), isFalse);
+      expect(splashSrc.contains('license-validate'), isFalse);
+      expect(splashSrc.contains('fingerprint'), isFalse);
+      expect(splashSrc.contains('license-revoke'), isFalse);
+      expect(splashSrc.contains('activated_license'), isFalse);
+      expect(splashSrc.contains('license_key'), isFalse);
+      expect(splashSrc.contains('/license-expired'), isFalse);
+      expect(splashSrc.contains('Verificando licencia'), isFalse,
+          reason: 'loader copy must not mention licenses');
+      expect(splashSrc.toLowerCase().contains('licen'), isFalse,
+          reason: 'R7: no license residue may survive in the splash');
+    });
+
+    test('splash_screen.dart keeps the startup and fail-open scaffolding', () {
+      expect(splashSrc.contains('const _startupTimeout'), isTrue);
+      expect(splashSrc.contains('const _routeStepTimeout'), isTrue);
+      expect(splashSrc.contains('_boundedRouteStep'), isTrue);
+      expect(splashSrc.contains('_goFallback'), isTrue);
+      expect(splashSrc.contains('_initApp'), isTrue);
+      expect(splashSrc.contains('runStartupFlow'), isTrue);
+      expect(splashSrc.contains('TIMEOUT colgado en'), isTrue);
+      expect(splashSrc.contains('flutter_secure_storage'), isTrue);
+      expect(splashSrc.contains('const _secureStorage'), isTrue);
+      expect(splashSrc.contains('startupSteps'), isTrue);
+      expect(splashSrc.contains('hasUsersOverride'), isTrue);
+      expect(splashSrc.contains('usersQueryOverride'), isTrue);
+      expect(splashSrc.contains("'Iniciando...'"), isTrue,
+          reason: 'loader copy switches to the neutral startup text');
+      expect(splashSrc.contains('createDefaultAdmin'), isTrue);
+      expect(splashSrc.contains('createDefaultJefe'), isTrue);
+    });
+  });
 }
