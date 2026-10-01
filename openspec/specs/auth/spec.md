@@ -8,7 +8,7 @@ Define the SMS-specific role model for Hamburguesas Express — replacing POS co
 
 ### Requirement: SMS Role Enum
 
-The system MUST replace the POS role enum (`super_admin`, `admin`, `vendedor`, `almacenero`) with SMS-specific roles: `admin`, `redes`, `cocina`, `domicilio`, `mesero`. The login and license validation flow MUST remain unchanged.
+The system MUST replace the POS role enum (`super_admin`, `admin`, `vendedor`, `almacenero`) with SMS-specific roles: `admin`, `redes`, `cocina`, `domicilio`, `mesero`. The login flow MUST remain unchanged.
 
 #### Scenario: Admin user authenticates with new role
 

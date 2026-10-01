@@ -2,17 +2,17 @@
 
 ## Purpose
 
-Guarantee the splash/startup flow never hangs the device: a hard overall timeout, per-step isolation with step logging, non-fatal device-fingerprint failures, and a preserved, deterministic route fallback chain. This is a NEW spec (no prior main spec existed).
+Guarantee the splash/startup flow never hangs the device: a hard overall timeout, per-step isolation with step logging, and a deterministic, license-free route decision chain. This is a NEW spec (no prior main spec existed).
 
 ## Requirements
 
 ### Requirement: Hard overall timeout with fail-open fallback
 
-The splash startup flow MUST complete within 10 seconds, enforced by a hard timeout wrapping the entire check sequence (`_initApp` + `_checkLicense` equivalent). On timeout, the system SHALL — fail-open — navigate to `/login` (or `/register` when no users exist) and log the timeout reason and last completed step. The timeout value SHALL be a named constant so it can be adjusted or disabled.
+The splash startup flow MUST complete within 10 seconds, enforced by a hard timeout wrapping the entire check sequence (`_initApp` equivalent). On timeout, the system SHALL — fail-open — navigate to `/login` (or `/register` when no users exist) and log the timeout reason and last completed step. The timeout value SHALL be a named constant so it can be adjusted or disabled.
 
-#### Scenario: Hung platform call triggers fallback
+#### Scenario: Hung step triggers fallback
 
-- GIVEN the sequence hangs at the device fingerprint step (platform channel stuck)
+- GIVEN the sequence hangs at the backup-init step
 - WHEN 10s elapse with no completion
 - THEN the app navigates to `/login` (or `/register` if no users exist)
 - AND splash stops showing the loader
@@ -25,7 +25,7 @@ The splash startup flow MUST complete within 10 seconds, enforced by a hard time
 
 ### Requirement: Per-step isolation and step logging
 
-Each sequential awaited step in the startup chain — DB init / default records (admin, jefe), plans init, backup init, exports weekly cleanup, users query, license read/validation, device fingerprint, session read — MUST be individually wrapped try/catch, proceed or abort predictably on failure, and log a step name before starting and after finishing (success or error). This makes the hanging step identifiable in production logs.
+Each sequential awaited step in the startup chain — DB init / default records (admin, jefe), backup init, exports weekly cleanup, users query, session read, role read — MUST be individually wrapped try/catch, proceed or abort predictably on failure, and log a step name before starting and after finishing (success or error). This makes the hanging step identifiable in production logs. The startup chain MUST NOT contain any license read/validation, plan initialization, or device-fingerprint step.
 
 #### Scenario: Step failure is isolated
 
@@ -40,27 +40,9 @@ Each sequential awaited step in the startup chain — DB init / default records 
 - WHEN 10s timeout fires
 - THEN the timeout log names the exact step it was stuck on (from the step log)
 
-### Requirement: Device fingerprint is non-fatal and time-bounded
+### Requirement: Route decision order and fail-open fallback
 
-The `getDeviceFingerprint` call (DeviceInfoPlugin platform channel, license_service.dart) MUST be wrapped with its own timeout. If the platform channel hangs or throws, it MUST be treated as non-fatal and configurable: the fingerprint is treated as unavailable, mismatch checks that compare the license-bound device ID proceed without blocking login. A fingerprint mismatch MUST only prompt re-login (or activation) but MUST NOT hang startup.
-
-#### Scenario: Platform channel fails
-
-- GIVEN DeviceInfoPlugin throws / times out
-- WHEN the fingerprint step
-- THEN fingerprint is unavailable but splash continues
-- AND login remains reachable
-
-#### Scenario: Fingerprint mismatch prompts login without hanging
-
-- GIVEN the license is bound to a different device ID
-- WHEN the comparison runs
-- THEN the app revokes/blocks login for that license and routes to login with a message
-- AND this does not exceed the overall 10s timeout
-
-### Requirement: Preserved route fallback order
-
-The startup routing order MUST be preserved: register if no users → login if no license activated → license-expired when expired → invalid-license → login when device mismatched → home when session valid (<24h) → login otherwise. A timeout or caught error SHALL use `login` as the fallback when users exist, `register` when none.
+The route decision order MUST be: register if no users → home when session valid (<24h) → login otherwise. The chain MUST contain no license, activation, expiry, or device-mismatch branches. Each awaited route step is fenced by its own timeout and logged as START/OK/FAIL. A timeout or caught error SHALL use `login` as the fallback when users exist, `register` when none.
 
 #### Scenario: Fallback order after every failure
 
@@ -71,4 +53,4 @@ The startup routing order MUST be preserved: register if no users → login if n
 
 ## REMOVED
 
-- (none — this is a new spec)
+- Requirement: Device fingerprint is non-fatal and time-bounded (removed with the licensing domain — `license_service.dart` deleted, R2/R8)

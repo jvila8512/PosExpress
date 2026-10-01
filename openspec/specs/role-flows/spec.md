@@ -203,15 +203,15 @@ The system MUST provide three reusable widgets used across multiple roles:
 - AND the cronometer SHALL display elapsed time in JetBrains Mono
 - AND the StatusBadge SHALL show the current state in the correct color
 
-### Requirement: Admin Navigation — Nuevo Pedido and Usuarios
+### Requirement: Admin Navigation — Usuarios and Configuración
 
-The admin and super_admin side menus (`_adminMenuItems`, `_superAdminMenuItems` in side_menu.dart) MUST include `Nuevo Pedido` (→ `/orders/new`) and `Usuarios` (→ `/workers`). The admin dashboard (home_screen.dart) MUST expose a `Nuevo Pedido` action shortcut. The worker screen SHALL keep its existing capabilities (list users, create/edit admin/vendedor with plan-limit enforcement, reset password, activate/deactivate).
+The admin and super_admin side menus (`_adminMenuItems`, `_superAdminMenuItems` in side_menu.dart) MUST contain exactly two entries: `Usuarios` (→ `/workers`) and `Configuración` (→ `/settings`). The admin dashboard (home_screen.dart) MUST expose a `Nuevo Pedido` action shortcut to `/orders/new`. The worker screen SHALL keep its existing capabilities (list users, create/edit admin/vendedor, reset password, activate/deactivate).
 
-#### Scenario: Admin menu shows both entries
+#### Scenario: Admin menu shows Usuarios and Configuración
 
 - GIVEN role `admin` or `super_admin` with the updated menu
 - WHEN the user opens the side menu
-- THEN `Nuevo Pedido` and `Usuarios` items are listed and navigate correctly
+- THEN `Usuarios` and `Configuración` items are listed and navigate correctly
 - WHEN the user taps `Nuevo Pedido` from the dashboard shortcut
 - THEN the order form opens at `/orders/new`
 
