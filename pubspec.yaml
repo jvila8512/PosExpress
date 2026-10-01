@@ -43,7 +43,6 @@ dependencies:
   url_launcher: ^6.2.0
 
   # UI/Reportes
-  fl_chart: ^0.70.0
   syncfusion_flutter_xlsio: ^28.1.36
   pdf: ^3.11.1
 
