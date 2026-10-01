@@ -65,7 +65,6 @@ class _WorkersScreenState extends ConsumerState<WorkersScreen> {
   String _currentRole = '';
   String _currentUserId = '';
   bool get _isSuperAdmin => _currentRole == 'super_admin';
-  bool get _canAddAdmin => _isSuperAdmin;
 
   @override
   void initState() {

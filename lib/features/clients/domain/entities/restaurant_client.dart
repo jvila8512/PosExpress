@@ -1,6 +1,6 @@
 /// Represents a restaurant delivery client.
 ///
-/// This is a separate entity from the license-level `Clientes` table.
+/// This is a separate entity from the `Clientes` table.
 /// No foreign key relationship exists between them.
 class RestaurantClient {
   final String id;
