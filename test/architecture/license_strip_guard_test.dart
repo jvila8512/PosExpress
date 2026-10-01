@@ -275,18 +275,60 @@ void main() {
       }
     });
 
-    test('license service and its fingerprint test survive until T7c', () {
+    test('T7c — service, fingerprint test and license tables are gone', () {
       expect(
         File('lib/core/security/license_service.dart').existsSync(),
-        isTrue,
-        reason: 'app_database.dart still imports it until T7c',
+        isFalse,
+        reason: 'T7c deletes the service together with the DAO it needed',
       );
       expect(
         File('test/core/security/license_service_fingerprint_test.dart')
             .existsSync(),
-        isTrue,
-        reason: 'deleted together with the service in T7c',
+        isFalse,
+        reason: 'T7c deletes the fingerprint test with the service',
       );
+
+      final dbSrc =
+          File('lib/core/database/app_database.dart').readAsStringSync();
+
+      expect(dbSrc.contains('license_service.dart'), isFalse,
+          reason: 'the import must not survive');
+      expect(dbSrc.contains('class Licenses extends Table'), isFalse,
+          reason: 'R6: Licenses must not be defined');
+      expect(dbSrc.contains('class LicenciasCliente extends Table'), isFalse,
+          reason: 'R6: LicenciasCliente must not be defined');
+      expect(dbSrc.contains('class LicensePlanes extends Table'), isFalse,
+          reason: 'R6: LicensePlanes must not be defined');
+      expect(dbSrc.contains('    Licenses,'), isFalse,
+          reason: 'R6: absent from the @DriftDatabase table list');
+      expect(dbSrc.contains('    LicenciasCliente,'), isFalse,
+          reason: 'R6: absent from the @DriftDatabase table list');
+      expect(dbSrc.contains('    LicensePlanes,'), isFalse,
+          reason: 'R6: absent from the @DriftDatabase table list');
+      expect(dbSrc.contains('class Clientes extends Table'), isTrue,
+          reason: 'the clients table is not part of the licensing domain');
+      expect(dbSrc.contains('int get schemaVersion => 15'), isTrue,
+          reason: 'R6: schema version bumped to 15');
+
+      // The v15 migration iterates _licenseDropTables, so assert the guard
+      // clause, the list it feeds, and the DROP statement.
+      final v15 = RegExp(r'if \(from < 15\) \{(.*?)\n      \}', dotAll: true)
+          .firstMatch(dbSrc);
+      expect(v15, isNotNull, reason: 'R6: a v15 migration branch must exist');
+      expect(v15!.group(1)!.contains('_licenseDropTables'), isTrue,
+          reason: 'R6: the v15 branch must drop the old tables');
+      expect(v15.group(1)!.contains("DROP TABLE IF EXISTS \$table"), isTrue,
+          reason: 'R6: v15 migration drops the physical tables');
+      final dropList = RegExp(
+        r'_licenseDropTables = \[(.*?)\];',
+        dotAll: true,
+      ).firstMatch(dbSrc);
+      expect(dropList, isNotNull,
+          reason: 'R6: the drop list must be declared');
+      for (final table in ['licenses', 'licencias_cliente', 'license_planes']) {
+        expect(dropList!.group(1)!.contains("'$table'"), isTrue,
+            reason: 'R6: $table must be dropped in v15');
+      }
     });
 
     test('no surviving source references a deleted path', () {

@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'package:uuid/uuid.dart';
-import 'package:etecsa/core/security/license_service.dart';
 
 part 'app_database.g.dart';
 
@@ -63,44 +62,7 @@ class Users extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// --- LICENCIAS (legacy - mantener para compatibilidad) ---
-class Licenses extends Table {
-  TextColumn get id => text()();
-  TextColumn get licenseKey => text().unique()();
-  TextColumn get tipo => text()(); // 'admin' o 'vendedor'
-  DateTimeColumn get fechaInicio => dateTime()();
-  DateTimeColumn get fechaFin => dateTime()();
-  TextColumn get dispositivoId => text().nullable()();
-  BoolColumn get activa => boolean().withDefault(const Constant(true))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-/// --- LICENCIAS DE CLIENTE (nueva tabla) ---
-class LicenciasCliente extends Table {
-  TextColumn get id => text()();
-  TextColumn get clienteId => text().references(Clientes, #id)();
-  TextColumn get codigo => text().unique()();
-  TextColumn get plan => text()(); // FREE, PRO, NEGOCIO
-  DateTimeColumn get fechaCreacion => dateTime()();
-  DateTimeColumn get fechaExpiracion => dateTime()();
-  DateTimeColumn get fechaCancelacion =>
-      dateTime().nullable()(); // NUEVO: Fecha de cancelación
-  TextColumn get estado => text().withDefault(
-    const Constant('activa'),
-  )(); // activa, vencida, cancelada
-  RealColumn get precioPagado => real().withDefault(const Constant(0.0))();
-  TextColumn get dispositivoId => text().nullable()();
-  TextColumn get notas => text().nullable()();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-/// --- CLIENTES (para licencias) ---
+/// --- CLIENTES ---
 class Clientes extends Table {
   TextColumn get id => text()();
   TextColumn get nombre => text()();
@@ -110,21 +72,6 @@ class Clientes extends Table {
   TextColumn get notas => text().nullable()();
   BoolColumn get active => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-/// --- PLANES DE LICENCIAS ---
-class LicensePlanes extends Table {
-  TextColumn get id => text()(); // Usar texto para mantener compatibilidad
-  TextColumn get nombre => text()(); // FREE, PRO, NEGOCIO
-  RealColumn get precio => real()(); // precio total del plan
-  TextColumn get descripcion => text().nullable()();
-  IntColumn get diasDuracion => integer()(); // 30, 365, etc
-  IntColumn get maxProductos => integer()();
-  IntColumn get maxVendedores => integer()();
-  BoolColumn get activa => boolean().withDefault(const Constant(true))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -644,10 +591,7 @@ class DailyPayroll extends Table {
   tables: [
     Categories,
     Users,
-    Licenses,
-    LicenciasCliente,
     Clientes,
-    LicensePlanes,
     Products,
     InventoryLots,
     Inventories,
@@ -700,7 +644,7 @@ class AppDatabase extends _$AppDatabase {
 
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -885,8 +829,24 @@ class AppDatabase extends _$AppDatabase {
         // 5. Migrate POS roles to SMS roles
         await _migrateRoles();
       }
+      if (from < 15) {
+        // v15: remove the licensing domain. Physical drop only (v14 pattern):
+        // the tables are no longer declared, so nothing recreates them.
+        for (final table in _licenseDropTables) {
+          try {
+            await customStatement('DROP TABLE IF EXISTS $table');
+          } catch (_) {}
+        }
+      }
     },
   );
+
+  /// Table names removed with the licensing domain in the v15 migration.
+  static const List<String> _licenseDropTables = [
+    'licenses',
+    'licencias_cliente',
+    'license_planes',
+  ];
 
   /// List of POS table names to drop in v14 migration (physical drop only).
   /// The table CLASSES remain in @DriftDatabase for compilation compat until
@@ -2835,7 +2795,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // ================================================================
-  // MÉTODOS DE CLIENTES (para licencias)
+  // MÉTODOS DE CLIENTES
   // ================================================================
 
   /// Obtener todos los clientes
@@ -2945,7 +2905,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Borrar todo y reiniciar (super_admin) — borra TODOS los datos de negocio
-  /// Preserva: users, licensePlanes, licenses, licenciasCliente, clientes
+  /// Preserva: users, clientes
   /// NO resetea auto-increment IDs
   Future<void> clearAllDataAdmin() async {
     await transaction(() async {
